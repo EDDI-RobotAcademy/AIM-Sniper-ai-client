@@ -301,3 +301,4 @@ pyrightconfig.json
 *.pem
 *.crt
 *.key
+*.json
