@@ -31,3 +31,23 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
                 except json.JSONDecodeError as e:
                     print(f"Error reading {file_path}: {e}")
         return dataList
+
+    def extractColumns(self, rawDataList):
+        extractedData = {}
+
+        for data in rawDataList:
+            info = data['dataSet']['info']
+            info_key = '_'.join(list(info.values()))
+
+            if info_key not in extractedData:
+                extractedData[info_key] = []
+
+            extractedData[info_key].append({
+                'question': data['dataSet']['question']['raw']['text'],
+                'answer': data['dataSet']['answer']['raw']['text'],
+                'occupation': data['dataSet']['info']['occupation'],
+                'gender': data['dataSet']['info']['gender'],
+                'ageRange': data['dataSet']['info']['ageRange'],
+                'experience': data['dataSet']['info']['experience'],
+            })
+        return extractedData
