@@ -1,7 +1,7 @@
-from preprocessing.repository.preprocessing_repository import PreprocessingRepository
+from preprocessing.repository.interview_preprocessing_repository import InterviewPreprocessingRepository
 
 
-class PreprocessingRepositoryImpl(PreprocessingRepository):
+class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
     __instance = None
 
     def __new__(cls):
