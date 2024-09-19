@@ -7,5 +7,3 @@ if __name__ == '__main__':
     # c1.separateFileByInfo(dataList)
     data = c1.readJsonFile(filePath='assets/interview/')
     print(data)
-    # mecab = c1.loadMecab()
-    # taggedList = c1.posTagging(mecab)

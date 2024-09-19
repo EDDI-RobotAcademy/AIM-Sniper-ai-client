@@ -73,6 +73,12 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
         # 일반 명사,
         return posTagging
 
+    def filterWord(self, posTagging):
+        targetTags = ['NNG']
+
+        # 특정 태그에 포함된 단어들만 리스트에 저장
+        filtered_words = [word for word, tag in posTagging if any(t in tag for t in targetTags)]
+        print(list(set(filtered_words)))
 
 
 
