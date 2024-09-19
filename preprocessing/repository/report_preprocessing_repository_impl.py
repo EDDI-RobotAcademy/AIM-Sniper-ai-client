@@ -1,7 +1,7 @@
-from preprocessing.repository.preprocessing_repository import PreprocessingRepository
+from preprocessing.repository.report_preprocessing_repository import ReportPreprocessingRepository
 
 
-class PreprocessingRepositoryImpl(PreprocessingRepository):
+class ReportPreprocessingRepositoryImpl(ReportPreprocessingRepository):
     __instance = None
 
     def __new__(cls):

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
 
 
-class PreprocessingRepository(ABC):
+class InterviewPreprocessingRepository(ABC):
     pass
