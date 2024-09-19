@@ -5,3 +5,7 @@ class InterviewPreprocessingRepository(ABC):
     @abstractmethod
     def readRawJson(self):
         pass
+
+    @abstractmethod
+    def extractColumns(self, rawDataList):
+        pass
