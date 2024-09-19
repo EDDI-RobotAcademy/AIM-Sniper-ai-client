@@ -21,3 +21,7 @@ class InterviewPreprocessingRepository(ABC):
     @abstractmethod
     def posTagging(self, mecab, text):
         pass
+
+    @abstractmethod
+    def filterWord(self, posTagging):
+        pass
