@@ -21,6 +21,7 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
         return cls.__instance
 
     def readRawJson(self):
+        os.makedirs(self.FILE_PATH, exist_ok=True)
         jsonFiles = glob.glob(os.path.join(self.FILE_PATH, '**', '*.json'), recursive=True)
         dataList = []
         for file_path in jsonFiles:
