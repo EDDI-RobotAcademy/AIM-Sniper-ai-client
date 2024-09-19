@@ -2,4 +2,6 @@ from abc import ABC, abstractmethod
 
 
 class InterviewPreprocessingRepository(ABC):
-    pass
+    @abstractmethod
+    def readRawJson(self):
+        pass
