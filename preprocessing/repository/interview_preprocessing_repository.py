@@ -9,3 +9,7 @@ class InterviewPreprocessingRepository(ABC):
     @abstractmethod
     def extractColumns(self, rawDataList):
         pass
+
+    @abstractmethod
+    def separateJson(self, extractedData):
+        pass
