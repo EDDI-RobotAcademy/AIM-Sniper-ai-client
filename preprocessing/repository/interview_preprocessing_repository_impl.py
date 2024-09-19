@@ -51,3 +51,14 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
                 'experience': data['dataSet']['info']['experience'],
             })
         return extractedData
+
+    def separateJson(self, extractedData):
+        os.makedirs('assets/interview', exist_ok=True)
+
+        for info_key, data in extractedData.items():
+            filename = f'assets/interview/{info_key}.json'
+            with open(filename, 'w', encoding='utf-8') as json_file:
+                json.dump(data, json_file, ensure_ascii=False, indent=4)
+        print('Saved at assets/interview/*')
+
+        return True
