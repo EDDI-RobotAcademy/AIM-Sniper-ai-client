@@ -1,12 +1,11 @@
 import glob
 import json
 import os
+from mecab import MeCab
 from preprocessing.repository.interview_preprocessing_repository import InterviewPreprocessingRepository
 
 class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
     __instance = None
-    FILE_PATH = 'assets/raw_json_data/'
-
     def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super().__new__(cls)
@@ -20,9 +19,9 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
 
         return cls.__instance
 
-    def readRawJson(self):
-        os.makedirs(self.FILE_PATH, exist_ok=True)
-        jsonFiles = glob.glob(os.path.join(self.FILE_PATH, '**', '*.json'), recursive=True)
+    def readJsonFile(self, filePath='assets/raw_json_data/'):
+        os.makedirs(filePath, exist_ok=True)
+        jsonFiles = glob.glob(os.path.join(filePath, '**', '*.json'), recursive=True)
         dataList = []
         for file_path in jsonFiles:
             with open(file_path, 'r', encoding='utf-8') as f:
@@ -38,12 +37,12 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
 
         for data in rawDataList:
             info = data['dataSet']['info']
-            info_key = '_'.join(list(info.values()))
+            infoKey = '_'.join(list(info.values()))
 
-            if info_key not in extractedData:
-                extractedData[info_key] = []
+            if infoKey not in extractedData:
+                extractedData[infoKey] = []
 
-            extractedData[info_key].append({
+            extractedData[infoKey].append({
                 'question': data['dataSet']['question']['raw']['text'],
                 'answer': data['dataSet']['answer']['raw']['text'],
                 'occupation': data['dataSet']['info']['occupation'],
@@ -53,7 +52,7 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
             })
         return extractedData
 
-    def separateJson(self, extractedData):
+    def separateFileByInfo(self, extractedData):
         os.makedirs('assets/interview', exist_ok=True)
 
         for info_key, data in extractedData.items():
@@ -63,3 +62,17 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
         print('Saved at assets/interview/*')
 
         return True
+
+    def loadMecab(self):
+        mecab = MeCab()
+        return mecab
+
+    def posTagging(self, mecab, text):
+        posTagging = mecab.pos(text)
+        print(posTagging)
+        # 일반 명사,
+        return posTagging
+
+
+
+

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 class InterviewPreprocessingRepository(ABC):
     @abstractmethod
-    def readRawJson(self):
+    def readJsonFile(self, filePath):
         pass
 
     @abstractmethod
@@ -11,5 +11,13 @@ class InterviewPreprocessingRepository(ABC):
         pass
 
     @abstractmethod
-    def separateJson(self, extractedData):
+    def separateFileByInfo(self, extractedData):
+        pass
+
+    @abstractmethod
+    def loadMecab(self):
+        pass
+
+    @abstractmethod
+    def posTagging(self, mecab, text):
         pass
