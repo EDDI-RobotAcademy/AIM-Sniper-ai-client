@@ -3,8 +3,10 @@ import json
 import os
 import random
 
+import nltk
 import torch
 from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
@@ -18,6 +20,7 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
     np.random.seed(42)
     random.seed(42)
     sentenceTransformer = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+    vectorizer = TfidfVectorizer(tokenizer=lambda x: x, lowercase=False)
 
     def __new__(cls):
         if cls.__instance is None:
@@ -95,9 +98,7 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
         # print(list(set(filtered_words)))
         return list(set(filteredWords))
 
-    def calculateCosineSimilarity(self, filteredAnswer, filteredQuestion):
-        # sentenceTransformer = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
-
+    def calculateCosineSimilarityWithSentenceTransformer(self, filteredAnswer, filteredQuestion):
         filteredAnswerString = ' '.join(filteredAnswer)
         filteredQuestionString = ' '.join(filteredQuestion)
 
@@ -107,3 +108,18 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
         cosineSimilarity = cosine_similarity([embeddingAnswer], [embeddingQuestion])
 
         return cosineSimilarity
+
+    def downloadNltkData(self, nltkDataPath):
+        os.mkdir(nltkDataPath)
+        nltk.data.path.append(nltkDataPath)
+        nltk.download('punkt', download_dir=nltkDataPath)
+
+    def calculateCosineSimilarityWithNltk(self, filteredWordList):
+        # TF-IDF 벡터라이저로 텍스트 벡터화
+        tfidfMatrix = self.vectorizer.fit_transform(filteredWordList)
+
+        # 답변과 나머지 질문들 간의 코사인 유사도 계산
+        cosineSimilarityList = cosine_similarity(tfidfMatrix[0:1], tfidfMatrix[1:])
+
+        return cosineSimilarityList
+
