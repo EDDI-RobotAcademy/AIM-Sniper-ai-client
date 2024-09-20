@@ -27,5 +27,13 @@ class InterviewPreprocessingRepository(ABC):
         pass
 
     @abstractmethod
-    def calculateCosineSimilarity(self, filteredAnswer, filteredQuestion):
+    def calculateCosineSimilarityWithSentenceTransformer(self, filteredAnswer, filteredQuestion):
+        pass
+
+    @abstractmethod
+    def downloadNltkData(self, nltkDataPath):
+        pass
+
+    @abstractmethod
+    def calculateCosineSimilarityWithNltk(self, filteredWordList):
         pass
