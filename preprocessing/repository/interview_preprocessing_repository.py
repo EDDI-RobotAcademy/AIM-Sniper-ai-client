@@ -25,3 +25,7 @@ class InterviewPreprocessingRepository(ABC):
     @abstractmethod
     def filterWord(self, posTagging):
         pass
+
+    @abstractmethod
+    def calculateCosineSimilarity(self, filteredAnswer, filteredQuestion):
+        pass
