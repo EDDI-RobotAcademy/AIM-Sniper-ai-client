@@ -16,12 +16,6 @@ from preprocessing.repository.interview_preprocessing_repository import Intervie
 class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
     __instance = None
 
-    torch.manual_seed(42)
-    np.random.seed(42)
-    random.seed(42)
-    sentenceTransformer = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
-    vectorizer = TfidfVectorizer(tokenizer=lambda x: x, lowercase=False)
-
     def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super().__new__(cls)
@@ -39,6 +33,7 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
         os.makedirs(filePath, exist_ok=True)
         jsonFiles = glob.glob(os.path.join(filePath, '**', '*.json'), recursive=True)
         dataList = []
+
         for file_path in jsonFiles:
             with open(file_path, 'r', encoding='utf-8') as f:
                 try:
@@ -46,6 +41,7 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
                     dataList.append(data)
                 except json.JSONDecodeError as e:
                     print(f"Error reading {file_path}: {e}")
+
         return dataList
 
     def extractColumns(self, rawDataList):
@@ -90,36 +86,64 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
         return posTagging
 
     def filterWord(self, posTagging):
-        # targetTags = ['NNG']
-        targetTags = ['NNG', 'NNP', 'VV', 'VA']
+        targetTags = ['NNG']
+        # targetTags = ['NNG', 'NNP', 'VV', 'VA']
 
         # 특정 태그에 포함된 단어들만 리스트에 저장
         filteredWords = [word for word, tag in posTagging if any(t in tag for t in targetTags)]
         # print(list(set(filtered_words)))
-        return list(set(filteredWords))
+        return filteredWords
 
-    def calculateCosineSimilarityWithSentenceTransformer(self, filteredAnswer, filteredQuestion):
-        filteredAnswerString = ' '.join(filteredAnswer)
-        filteredQuestionString = ' '.join(filteredQuestion)
+    def loadSentenceTransformer(self):
+        torch.manual_seed(42)
+        np.random.seed(42)
+        random.seed(42)
+        sentenceTransformer = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
 
-        embeddingAnswer = self.sentenceTransformer.encode(filteredAnswerString)
-        embeddingQuestion = self.sentenceTransformer.encode(filteredQuestionString)
+        return sentenceTransformer
 
-        cosineSimilarity = cosine_similarity([embeddingAnswer], [embeddingQuestion])
+    def sampleAnswerAndQuestionIndex(self, totalSize, n, m):
+        # 전체 인덱스 생성 (0부터 total_size-1까지)
+        allIndices = np.arange(totalSize)
 
-        return cosineSimilarity
+        # n개의 인덱스 랜덤 샘플링
+        sampledAnswerIndex = np.random.choice(allIndices, size=n, replace=False)
+
+        # n개의 인덱스를 제외한 나머지 인덱스 추출
+        remainingIndices = np.setdiff1d(allIndices, sampledAnswerIndex)
+
+        # 나머지 인덱스에서 m개의 인덱스 랜덤 샘플링
+        sampledQuestionIndex = np.random.choice(remainingIndices, size=m, replace=False)
+
+        return sampledAnswerIndex, sampledQuestionIndex
+
+    def calculateCosineSimilarityWithSentenceTransformer(
+            self, sentenceTransformer, answerList, questionList):
+        embeddingAnswerList = sentenceTransformer.encode(answerList)
+        embeddingQuestionList = sentenceTransformer.encode(questionList)
+
+        cosineSimilarityList = cosine_similarity(embeddingAnswerList, embeddingQuestionList)
+
+        return cosineSimilarityList
 
     def downloadNltkData(self, nltkDataPath):
         os.mkdir(nltkDataPath)
         nltk.data.path.append(nltkDataPath)
         nltk.download('punkt', download_dir=nltkDataPath)
 
-    def calculateCosineSimilarityWithNltk(self, filteredWordList):
+    def loadVectorizer(self):
+        vectorizer = TfidfVectorizer(tokenizer=lambda x: x, lowercase=False)
+
+        return vectorizer
+
+    def calculateCosineSimilarityWithNltk(self, vectorizer, answerStringList, questionStringList):
+        answerAndQuestionList = answerStringList + questionStringList
+
         # TF-IDF 벡터라이저로 텍스트 벡터화
-        tfidfMatrix = self.vectorizer.fit_transform(filteredWordList)
+        tfidfMatrix = vectorizer.fit_transform(answerAndQuestionList)
 
         # 답변과 나머지 질문들 간의 코사인 유사도 계산
-        cosineSimilarityList = cosine_similarity(tfidfMatrix[0:1], tfidfMatrix[1:])
+        cosineSimilarityList = cosine_similarity(
+            tfidfMatrix[0:len(answerStringList)], tfidfMatrix[len(answerStringList):])
 
         return cosineSimilarityList
-

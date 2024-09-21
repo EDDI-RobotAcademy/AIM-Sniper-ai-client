@@ -27,7 +27,16 @@ class InterviewPreprocessingRepository(ABC):
         pass
 
     @abstractmethod
-    def calculateCosineSimilarityWithSentenceTransformer(self, filteredAnswer, filteredQuestion):
+    def loadSentenceTransformer(self):
+        pass
+
+    @abstractmethod
+    def sampleAnswerAndQuestionIndex(self, totalSize, n, m):
+        pass
+
+    @abstractmethod
+    def calculateCosineSimilarityWithSentenceTransformer(
+            self, sentenceTransformer, answerList, questionList):
         pass
 
     @abstractmethod
@@ -35,5 +44,9 @@ class InterviewPreprocessingRepository(ABC):
         pass
 
     @abstractmethod
-    def calculateCosineSimilarityWithNltk(self, filteredWordList):
+    def loadVectorizer(self):
+        pass
+
+    @abstractmethod
+    def calculateCosineSimilarityWithNltk(self, vectorizer, answerStringList, questionStringList):
         pass
