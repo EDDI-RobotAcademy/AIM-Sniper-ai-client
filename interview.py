@@ -5,67 +5,84 @@ from preprocessing.service.interview_preprocessing_service_impl import Interview
 if __name__ == '__main__':
     interviewPreprocessingService = InterviewPreprocessingServiceImpl.getInstance()
 
-    # startTime = time.time()
-    # interviewPreprocessingService.separateDataByInfo()
-    # endTime = time.time()
-    # print(f"소요 시간: {endTime - startTime}")
+    def separateData():
+        startTime = time.time()
+        interviewPreprocessingService.separateDataByInfo()
+        endTime = time.time()
+        print(f"소요 시간: {endTime - startTime}")
 
-    answerList, realQuestionList, questionList = (
-        interviewPreprocessingService.sampleInterviewData(nAnswer=50, mQuestion=20000))
+    def countKeyword(*args):
+        countedKeywordDict = dict()
+        for keyword in args:
+            countedKeywordDict[keyword] = interviewPreprocessingService.countWantToData(keyword)
+            print(f"{keyword}: {countedKeywordDict[keyword]}")
 
-    answerStringList, questionStringList = (
-        interviewPreprocessingService.transformSampledData(answerList, questionList))
+        return countedKeywordDict
 
-    # Sentence Transformer
-    startTime = time.time()
+    def calculateCosineSimilarityBySentenceTransformer(nAnswer, mQuestion):
+        answerList, realQuestionList, questionList = (
+            interviewPreprocessingService.sampleInterviewData(nAnswer, mQuestion))
 
-    sentenceTransformerCosineSimilarityList = (
-        interviewPreprocessingService.cosineSimilarityBySentenceTransformer(
-            answerStringList, questionStringList))
+        answerStringList, questionStringList = (
+            interviewPreprocessingService.transformSampledData(answerList, questionList))
 
-    endTime = time.time()
-    print(f"Sentence Transformer 소요 시간: {endTime - startTime}")
+        startTime = time.time()
+        print("유사도 계산 시작")
+        sentenceTransformerCosineSimilarityList = (
+            interviewPreprocessingService.cosineSimilarityBySentenceTransformer(
+                answerStringList, questionStringList))
 
-    outputFilename = 'output_sentence_transformer_A50_Q20000.txt'
-    with open(outputFilename, 'w', encoding='utf-8') as f:
-        for idx, cosineSimilarity in enumerate(sentenceTransformerCosineSimilarityList):
-            topFiveIndex = sorted(range(len(cosineSimilarity)),
-                                  key=lambda i: cosineSimilarity[i], reverse=True)[:5]
-            topFiveValue = [cosineSimilarity[i] for i in topFiveIndex]
+        endTime = time.time()
+        print(f"Sentence Transformer 소요 시간: {endTime - startTime}")
 
-            f.write(f"**실제 질문**: {realQuestionList[idx]}\n")
-            f.write(f"**답변**: {answerList[idx]}\n")
-            f.write("\n")
+        outputFilename = 'output_sentence_transformer.txt'
+        with open(outputFilename, 'w', encoding='utf-8') as f:
+            for idx, cosineSimilarity in enumerate(sentenceTransformerCosineSimilarityList):
+                topFiveIndex = sorted(range(len(cosineSimilarity)),
+                                      key=lambda i: cosineSimilarity[i], reverse=True)[:5]
+                topFiveValue = [cosineSimilarity[i] for i in topFiveIndex]
 
-            for i, index in enumerate(topFiveIndex):
-                f.write(f"**질문{i + 1}**: {questionList[index]}\n")
-                f.write(f"**유사도**: {topFiveValue[i]}\n")
-            f.write("-------------------------------------------------------------------\n")
-        print(f"{outputFilename} 생성")
+                f.write(f"**실제 질문**: {realQuestionList[idx]}\n")
+                f.write(f"**답변**: {answerList[idx]}\n")
+                f.write("\n")
 
-    # nltk
-    startTime = time.time()
+                for i, index in enumerate(topFiveIndex):
+                    f.write(f"**질문{i + 1}**: {questionList[index]}\n")
+                    f.write(f"**유사도**: {topFiveValue[i]}\n")
+                f.write("-------------------------------------------------------------------\n")
+            print(f"{outputFilename} 생성")
 
-    nltkCosineSimilarityList = interviewPreprocessingService.cosineSimilaritiyByNltk(
-        answerStringList, questionStringList
-    )
+    def calculateCosineSimilarityByNltk(nAnswer, mQuestion):
+        answerList, realQuestionList, questionList = (
+            interviewPreprocessingService.sampleInterviewData(nAnswer, mQuestion))
 
-    endTime = time.time()
-    print(f"nltk 소요 시간: {endTime - startTime}")
+        answerStringList, questionStringList = (
+            interviewPreprocessingService.transformSampledData(answerList, questionList))
 
-    outputFilename = 'output_nltk_A50_Q20000.txt'
-    with open(outputFilename, 'w', encoding='utf-8') as f:
-        for idx, cosineSimilarity in enumerate(nltkCosineSimilarityList):
-            topFiveIndex = sorted(range(len(cosineSimilarity)),
-                                  key=lambda i: cosineSimilarity[i], reverse=True)[:5]
-            topFiveValue = [cosineSimilarity[i] for i in topFiveIndex]
+        startTime = time.time()
 
-            f.write(f"**실제 질문**: {realQuestionList[idx]}\n")
-            f.write(f"**답변**: {answerList[idx]}\n")
-            f.write("\n")
+        nltkCosineSimilarityList = interviewPreprocessingService.cosineSimilarityByNltk(
+            answerStringList, questionStringList
+        )
 
-            for i, index in enumerate(topFiveIndex):
-                f.write(f"**질문{i + 1}**: {questionList[index]}\n")
-                f.write(f"**유사도**: {topFiveValue[i]}\n")
-            f.write("-------------------------------------------------------------------\n")
-        print(f"{outputFilename} 생성")
+        endTime = time.time()
+        print(f"nltk 소요 시간: {endTime - startTime}")
+
+        outputFilename = 'output_nltk.txt'
+        with open(outputFilename, 'w', encoding='utf-8') as f:
+            for idx, cosineSimilarity in enumerate(nltkCosineSimilarityList):
+                topFiveIndex = sorted(range(len(cosineSimilarity)),
+                                      key=lambda i: cosineSimilarity[i], reverse=True)[:5]
+                topFiveValue = [cosineSimilarity[i] for i in topFiveIndex]
+
+                f.write(f"**실제 질문**: {realQuestionList[idx]}\n")
+                f.write(f"**답변**: {answerList[idx]}\n")
+                f.write("\n")
+
+                for i, index in enumerate(topFiveIndex):
+                    f.write(f"**질문{i + 1}**: {questionList[index]}\n")
+                    f.write(f"**유사도**: {topFiveValue[i]}\n")
+                f.write("-------------------------------------------------------------------\n")
+            print(f"{outputFilename} 생성")
+
+    countKeyword("FEMALE", "MALE", "EXPERIENCED", "NEW")

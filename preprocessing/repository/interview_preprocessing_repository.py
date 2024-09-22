@@ -50,3 +50,7 @@ class InterviewPreprocessingRepository(ABC):
     @abstractmethod
     def calculateCosineSimilarityWithNltk(self, vectorizer, answerStringList, questionStringList):
         pass
+
+    @abstractmethod
+    def countWantToData(self, keyword):
+        pass
