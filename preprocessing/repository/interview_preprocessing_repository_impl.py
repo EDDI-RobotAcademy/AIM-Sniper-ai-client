@@ -147,3 +147,34 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
             tfidfMatrix[0:len(answerStringList)], tfidfMatrix[len(answerStringList):])
 
         return cosineSimilarityList
+
+    def countWantToData(self, keyword):
+        filePath = os.path.join(os.getcwd(), "assets", "interview")
+        jsonFileList = glob.glob(os.path.join(filePath, '**', '*.json'), recursive=True)
+        totalKeywordCount = 0
+
+        if keyword == "MALE":
+            for file in jsonFileList:
+                fileName = os.path.basename(file)  # 파일명 추출
+                if keyword in fileName:
+                    if "FEMALE" not in fileName:
+                        try:
+                            with open(file, 'r', encoding='utf-8') as f:
+                                data = json.load(f)
+                                totalKeywordCount += len(data)  # 각 파일 내 데이터 개수를 더함
+                        except json.JSONDecodeError as e:
+                            print(f"Error reading {file}: {e}")
+            return totalKeywordCount
+
+        for file in jsonFileList:
+            fileName = os.path.basename(file)  # 파일명 추출
+            if keyword in fileName:
+                try:
+                    with open(file, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        totalKeywordCount += len(data)  # 각 파일 내 데이터 개수를 더함
+                except json.JSONDecodeError as e:
+                    print(f"Error reading {file}: {e}")
+
+        return totalKeywordCount
+

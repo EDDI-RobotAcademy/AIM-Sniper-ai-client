@@ -34,8 +34,11 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
     def separateDataByInfo(self):
         rawData = self.__interviewPreprocessingRepository.readJsonFile()
+        print("readJsonFile() 완료")
         dataList = self.__interviewPreprocessingRepository.extractColumns(rawData)
+        print("extract 완료")
         self.__interviewPreprocessingRepository.separateFileByInfo(dataList)
+        print("separate 완료")
 
     def sampleInterviewData(self, nAnswer, mQuestion):
         interviewList = self.__interviewPreprocessingRepository.readJsonFile(filePath='assets/interview/')
@@ -77,7 +80,7 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
         return cosineSimilarityList
 
-    def cosineSimilaritiyByNltk(self, answerStringList, questionStringList):
+    def cosineSimilarityByNltk(self, answerStringList, questionStringList):
         if not os.path.exists(os.path.join(os.getcwd(), 'assets', 'nltk_data')):
             self.__interviewPreprocessingRepository.downloadNltkData()
 
@@ -87,4 +90,7 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         )
 
         return cosineSimilarityList
+
+    def countWantToData(self, keyword):
+        return self.__interviewPreprocessingRepository.countWantToData(keyword)
 

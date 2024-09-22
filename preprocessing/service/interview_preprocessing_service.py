@@ -17,3 +17,11 @@ class InterviewPreprocessingService(ABC):
     @abstractmethod
     def cosineSimilarityBySentenceTransformer(self, answerStringList, questionStringList):
         pass
+
+    @abstractmethod
+    def cosineSimilarityByNltk(self, answerStringList, questionStringList):
+        pass
+
+    @abstractmethod
+    def countWantToData(self, keyword):
+        pass
