@@ -3,11 +3,19 @@ from abc import ABC, abstractmethod
 
 class InterviewPreprocessingService(ABC):
     @abstractmethod
-    def separateDataByInfo(self):
+    def separateDataByInfo(self, filePath):
         pass
 
     @abstractmethod
-    def sampleInterviewData(self, nAnswer, mQuestion):
+    def getInterviewData(self, filePath):
+        pass
+
+    @abstractmethod
+    def flattenInterviewData(self, filePath):
+        pass
+
+    @abstractmethod
+    def sampleInterviewData(self, interviewList, nAnswer, mQuestion, filePath):
         pass
 
     @abstractmethod
@@ -23,5 +31,5 @@ class InterviewPreprocessingService(ABC):
         pass
 
     @abstractmethod
-    def countWantToData(self, keyword):
+    def countWantToData(self, keyword, interviewDataPath):
         pass

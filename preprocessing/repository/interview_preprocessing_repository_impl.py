@@ -64,14 +64,32 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
             })
         return extractedData
 
-    def separateFileByInfo(self, extractedData):
-        os.makedirs('assets/interview', exist_ok=True)
+    def extractColumns_2(self, rawDataList):
+        extractedData = {}
+
+        for data in rawDataList:
+            info = data['dataSet']['info']
+            infoKey = '_'.join([info['occupation'], info['experience']])
+
+            if infoKey not in extractedData:
+                extractedData[infoKey] = []
+
+            extractedData[infoKey].append({
+                'question': data['dataSet']['question']['raw']['text'],
+                'answer': data['dataSet']['answer']['raw']['text'],
+                'occupation': data['dataSet']['info']['occupation'],
+                'experience': data['dataSet']['info']['experience'],
+            })
+        return extractedData
+
+    def separateFileByInfo(self, extractedData, filePath):
+        os.makedirs(filePath, exist_ok=True)
 
         for info_key, data in extractedData.items():
-            filename = f'assets/interview/{info_key}.json'
+            filename = f'{filePath}/{info_key}.json'
             with open(filename, 'w', encoding='utf-8') as json_file:
                 json.dump(data, json_file, ensure_ascii=False, indent=4)
-        print('Saved at assets/interview/*')
+        print(f'Saved at {filePath}/*')
 
         return True
 
@@ -148,8 +166,8 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
 
         return cosineSimilarityList
 
-    def countWantToData(self, keyword):
-        filePath = os.path.join(os.getcwd(), "assets", "interview")
+    def countWantToData(self, keyword, interviewDataPath):
+        filePath = os.path.join(os.getcwd(), interviewDataPath)
         jsonFileList = glob.glob(os.path.join(filePath, '**', '*.json'), recursive=True)
         totalKeywordCount = 0
 

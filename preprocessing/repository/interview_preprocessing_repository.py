@@ -11,7 +11,11 @@ class InterviewPreprocessingRepository(ABC):
         pass
 
     @abstractmethod
-    def separateFileByInfo(self, extractedData):
+    def extractColumns_2(self, rawDataList):
+        pass
+
+    @abstractmethod
+    def separateFileByInfo(self, extractedData, filePath):
         pass
 
     @abstractmethod
@@ -52,5 +56,5 @@ class InterviewPreprocessingRepository(ABC):
         pass
 
     @abstractmethod
-    def countWantToData(self, keyword):
+    def countWantToData(self, keyword, interviewDataPath):
         pass
