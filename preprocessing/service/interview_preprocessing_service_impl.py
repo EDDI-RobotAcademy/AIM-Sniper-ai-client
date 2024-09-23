@@ -32,19 +32,26 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
         return cls.__instance
 
-    def separateDataByInfo(self):
+    def separateDataByInfo(self, filePath):
+        print("readJsonFile 시작")
         rawData = self.__interviewPreprocessingRepository.readJsonFile()
-        print("readJsonFile() 완료")
-        dataList = self.__interviewPreprocessingRepository.extractColumns(rawData)
+        print("readJsonFile 완료")
+        # dataList = self.__interviewPreprocessingRepository.extractColumns(rawData)
+        dataList = self.__interviewPreprocessingRepository.extractColumns_2(rawData)
         print("extract 완료")
-        self.__interviewPreprocessingRepository.separateFileByInfo(dataList)
+        self.__interviewPreprocessingRepository.separateFileByInfo(dataList, filePath)
         print("separate 완료")
 
-    def sampleInterviewData(self, nAnswer, mQuestion):
-        interviewList = self.__interviewPreprocessingRepository.readJsonFile(filePath='assets/interview/')
+    def getInterviewData(self, filePath):
+        return self.__interviewPreprocessingRepository.readJsonFile(filePath)
+
+    def flattenInterviewData(self, interviewList):
         interviewList = list(itertools.chain(*interviewList))
         print(f"인터뷰 수: {len(interviewList)}")
 
+        return interviewList
+
+    def sampleInterviewData(self, interviewList, nAnswer, mQuestion, filePath):
         sampledAnswerIndex, sampledQuestionIndex = (
             self.__interviewPreprocessingRepository.sampleAnswerAndQuestionIndex(
                 len(interviewList), nAnswer, mQuestion))
@@ -91,6 +98,6 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
         return cosineSimilarityList
 
-    def countWantToData(self, keyword):
-        return self.__interviewPreprocessingRepository.countWantToData(keyword)
+    def countWantToData(self, keyword, interviewDataPath):
+        return self.__interviewPreprocessingRepository.countWantToData(keyword, interviewDataPath)
 
