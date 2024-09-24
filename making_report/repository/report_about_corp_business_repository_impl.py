@@ -61,6 +61,9 @@ class ReportAboutCorpBusinessRepositoryImpl(ReportAboutCorpBusinessRepository):
         with open(f"{path}/{date}.json", "w", encoding='UTF-8-sig') as file:
             json.dump(dictData, file, ensure_ascii=False, indent=4)
 
+    def getCorpCodeDict(self):
+        return self.__wantedCorpCodeDict
+
     def alarmWrongRegisteredCorpName(self, name, corp):
         if not corp:
             print(f'기업명 입력 오류 "{name}"')
@@ -183,6 +186,5 @@ class ReportAboutCorpBusinessRepositoryImpl(ReportAboutCorpBusinessRepository):
             preprocessDataDict[corpName] = "\n".join(result)
 
         self.saveData(preprocessDataDict, "../data/dart_corp_business/preprocessed_data_v2")
-        self.saveData(preprocessDataDict, "asset")
 
         return preprocessDataDict

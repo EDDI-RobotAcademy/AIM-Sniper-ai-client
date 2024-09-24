@@ -7,6 +7,10 @@ class ReportAboutCorpBusinessRepository(ABC):
         pass
 
     @abstractmethod
+    def getCorpCodeDict(self):
+        pass
+
+    @abstractmethod
     def alarmWrongRegisteredCorpName(self, name, corp):
         pass
 
