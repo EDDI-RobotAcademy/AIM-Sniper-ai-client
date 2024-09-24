@@ -1,8 +1,11 @@
-import os
 from abc import ABC, abstractmethod
 
 
-class ReportAboutCorpBusinessService(ABC):
+class MakingReportService(ABC):
     @abstractmethod
     def makingReportAboutCorpBusiness(self):
+        pass
+
+    @abstractmethod
+    def makingReportAboutFinance(self):
         pass
