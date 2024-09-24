@@ -1,3 +1,5 @@
+import pickle
+
 from making_report.repository.report_about_corp_business_repository_impl import ReportAboutCorpBusinessRepositoryImpl
 from making_report.repository.report_about_finance_repository_impl import ReportAboutFinanceRepositoryImpl
 from making_report.service.making_report_service import MakingReportService
@@ -22,8 +24,9 @@ class MakingReportServiceImpl(MakingReportService):
         return cls.__instance
 
     def makingReport(self):
+        corpCodeDict = self.__corpBusinessRepository.getCorpCodeDict()
+
         corpBusinessRawData = self.__corpBusinessRepository.getRawDataFromDart()
         corpBusinessPreprocessedData = self.__corpBusinessRepository.preprocessRawData(corpBusinessRawData)
 
-        financeRawData = self.__financeRepository.getRawDataFromDart()
-        corpBusinessPreprocessedData = self.__financeRepository.preprocessRawData(financeRawData)
+        financeProfitDict = self.__financeRepository.getProfitDataFromDart(corpCodeDict)
