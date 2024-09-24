@@ -1,19 +1,22 @@
-import glob
-import json
 import os
 import random
+import numpy as np
+import glob
+import json
 
 import nltk
 import torch
+
 from sentence_transformers import SentenceTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
-
 from mecab import MeCab
-from preprocessing.repository.interview_preprocessing_repository import InterviewPreprocessingRepository
 
-class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
+from interview_preprocessing.repository.interview_preprocessing_corpus_repository import \
+    InterviewPreprocessingCorpusRepository
+
+
+class InterviewPreprocessingCorpusRepositoryImpl(InterviewPreprocessingCorpusRepository):
     __instance = None
 
     def __new__(cls):
@@ -28,70 +31,6 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
             cls.__instance = cls()
 
         return cls.__instance
-
-    def readJsonFile(self, filePath='assets/raw_json_data/'):
-        os.makedirs(filePath, exist_ok=True)
-        jsonFiles = glob.glob(os.path.join(filePath, '**', '*.json'), recursive=True)
-        dataList = []
-
-        for file_path in jsonFiles:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                try:
-                    data = json.load(f)
-                    dataList.append(data)
-                except json.JSONDecodeError as e:
-                    print(f"Error reading {file_path}: {e}")
-
-        return dataList
-
-    def extractColumns(self, rawDataList):
-        extractedData = {}
-
-        for data in rawDataList:
-            info = data['dataSet']['info']
-            infoKey = '_'.join(list(info.values()))
-
-            if infoKey not in extractedData:
-                extractedData[infoKey] = []
-
-            extractedData[infoKey].append({
-                'question': data['dataSet']['question']['raw']['text'],
-                'answer': data['dataSet']['answer']['raw']['text'],
-                'occupation': data['dataSet']['info']['occupation'],
-                'gender': data['dataSet']['info']['gender'],
-                'ageRange': data['dataSet']['info']['ageRange'],
-                'experience': data['dataSet']['info']['experience'],
-            })
-        return extractedData
-
-    def extractColumns_2(self, rawDataList):
-        extractedData = {}
-
-        for data in rawDataList:
-            info = data['dataSet']['info']
-            infoKey = '_'.join([info['occupation'], info['experience']])
-
-            if infoKey not in extractedData:
-                extractedData[infoKey] = []
-
-            extractedData[infoKey].append({
-                'question': data['dataSet']['question']['raw']['text'],
-                'answer': data['dataSet']['answer']['raw']['text'],
-                'occupation': data['dataSet']['info']['occupation'],
-                'experience': data['dataSet']['info']['experience'],
-            })
-        return extractedData
-
-    def separateFileByInfo(self, extractedData, filePath):
-        os.makedirs(filePath, exist_ok=True)
-
-        for info_key, data in extractedData.items():
-            filename = f'{filePath}/{info_key}.json'
-            with open(filename, 'w', encoding='utf-8') as json_file:
-                json.dump(data, json_file, ensure_ascii=False, indent=4)
-        print(f'Saved at {filePath}/*')
-
-        return True
 
     def loadMecab(self):
         mecab = MeCab()
@@ -120,23 +59,7 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
 
         return sentenceTransformer
 
-    def sampleAnswerAndQuestionIndex(self, totalSize, n, m):
-        # 전체 인덱스 생성 (0부터 total_size-1까지)
-        allIndices = np.arange(totalSize)
-
-        # n개의 인덱스 랜덤 샘플링
-        sampledAnswerIndex = np.random.choice(allIndices, size=n, replace=False)
-
-        # n개의 인덱스를 제외한 나머지 인덱스 추출
-        remainingIndices = np.setdiff1d(allIndices, sampledAnswerIndex)
-
-        # 나머지 인덱스에서 m개의 인덱스 랜덤 샘플링
-        sampledQuestionIndex = np.random.choice(remainingIndices, size=m, replace=False)
-
-        return sampledAnswerIndex, sampledQuestionIndex
-
-    def calculateCosineSimilarityWithSentenceTransformer(
-            self, sentenceTransformer, answerList, questionList):
+    def calculateCosineSimilarityWithSentenceTransformer(self, sentenceTransformer, answerList, questionList):
         embeddingAnswerList = sentenceTransformer.encode(answerList)
         embeddingQuestionList = sentenceTransformer.encode(questionList)
 
@@ -151,7 +74,6 @@ class InterviewPreprocessingRepositoryImpl(InterviewPreprocessingRepository):
 
     def loadVectorizer(self):
         vectorizer = TfidfVectorizer(tokenizer=lambda x: x, lowercase=False)
-
         return vectorizer
 
     def calculateCosineSimilarityWithNltk(self, vectorizer, answerStringList, questionStringList):
