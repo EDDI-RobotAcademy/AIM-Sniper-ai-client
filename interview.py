@@ -1,4 +1,5 @@
 import json
+import random
 import time
 
 from preprocessing.service.interview_preprocessing_service_impl import InterviewPreprocessingServiceImpl
@@ -92,8 +93,6 @@ if __name__ == '__main__':
                 f.write("-------------------------------------------------------------------\n")
             print(f"{outputFilename} 생성")
 
-    # separateData('assets/interview_v2')
-
     def labelingQuestionByRuleBase():
         interviewList = interviewPreprocessingService.getInterviewData('assets/interview')
         interviewList = interviewPreprocessingService.flattenInterviewData(interviewList)
@@ -122,23 +121,24 @@ if __name__ == '__main__':
 
         for interview in interviewList:
             question = interview['question']
-            interview['intent'] = None
+            interview['rule_based_intent'] = None
 
             if any(keyword in question for keyword in communicationKeywordList):
-                interview['intent'] = '의사 소통'
+                interview['rule_based_intent'] = '의사 소통'
             elif any(keyword in question for keyword in adaptabilityKeywordList):
-                interview['intent'] = '적응력'
+                interview['rule_based_intent'] = '적응력'
             elif any(keyword in question for keyword in projectKeywordList):
                 if all(keyword not in question for keyword in ['게임', '창의성', '산사태']):
-                    interview['intent'] = '프로젝트 경험'
+                    interview['rule_based_intent'] = '프로젝트 경험'
             elif any(keyword in question for keyword in selfDevelopmentKeywordList):
-                interview['intent'] = '자기 개발'
+                interview['rule_based_intent'] = '자기 개발'
             elif any(keyword in question for keyword in skillKeywordList):
-                interview['intent'] = '기술적 역량'
+                interview['rule_based_intent'] = '기술적 역량'
 
         return interviewList
 
-    def countLabeledInterview(interviewList):
+    def countLabeledInterview():
+        labeldInterviewList = labelingQuestionByRuleBase()
         labelCountDict = {
             '적응력': 0,
             '프로젝트 경험': 0,
@@ -148,8 +148,8 @@ if __name__ == '__main__':
             'None': 0
         }
 
-        for interview in interviewList:
-            intent = interview['intent']
+        for interview in labeldInterviewList:
+            intent = interview['rule_based_intent']
 
             if intent in labelCountDict:
                 labelCountDict[intent] += 1
@@ -158,17 +158,58 @@ if __name__ == '__main__':
 
         return labelCountDict
 
-    labeledInterviewList = labelingQuestionByRuleBase()
-    labelCountDict = countLabeledInterview(labeledInterviewList)
-    print(labelCountDict)
+    def splitInterviewListByIntentIsNone():
+        labeledInterviewList = labelingQuestionByRuleBase()
 
-    interviewListNotNone = []
-    for interview in labeledInterviewList:
-        if interview['intent'] is not None:
-            interviewListNotNone.append(interview)
+        interviewListIntentIsNotNone = []
+        interviewListIntentIsNone = []
+        for interview in labeledInterviewList:
+            if interview['rule_based_intent'] is not None:
+                interviewListIntentIsNotNone.append({
+                    'question': interview['question'],
+                    'rule_based_intent': interview['rule_based_intent']
+                })
+            else:
+                interviewListIntentIsNone.append({
+                    'question': interview['question'],
+                    'rule_based_intent': interview['rule_based_intent']
+                })
 
-    with open('assets/interview_labeling_rule_base.json', 'w', encoding='utf-8') as f:
-        json.dump(labeledInterviewList, f, ensure_ascii=False, indent=4)
+        return interviewListIntentIsNone, interviewListIntentIsNotNone
 
-    with open('assets/interview_labeling_rule_base_not_none.json', 'w', encoding='utf-8') as f:
-        json.dump(interviewListNotNone, f, ensure_ascii=False, indent=4)
+    def sampleRandomQuestionListIntentIsNone(sampleSize):
+        interviewListIntentIsNone, _ = splitInterviewListByIntentIsNone()
+        random.seed(42)
+        sampledInterviewListIntentIsNone = random.sample(interviewListIntentIsNone, sampleSize)
+
+        return sampledInterviewListIntentIsNone
+
+    def sampleRandomQuestionListByIntent(sample_size):
+        labeldInterviewList = labelingQuestionByRuleBase()
+        random.seed(42)
+
+        intentDict = {
+            '적응력': [],
+            '프로젝트 경험': [],
+            '자기 개발': [],
+            '의사 소통': [],
+            '기술적 역량': []
+        }
+
+        # 각 의도별로 질문을 분류
+        for interview in labeldInterviewList:
+            intent = interview['rule_based_intent']
+            if intent in intentDict:
+                intentDict[intent].append({
+                    "question": interview['question'],
+                    "rule_based_intent": interview['rule_based_intent']
+                })
+
+        # 각 의도별로 랜덤 샘플링
+        sampledQuestionList = []
+        for intent, questionList in intentDict.items():
+            sampledQuestionList.append(random.sample(questionList, min(sample_size, len(questionList))))
+
+        sampledQuestionList = interviewPreprocessingService.flattenInterviewData(sampledQuestionList)
+
+        return sampledQuestionList
