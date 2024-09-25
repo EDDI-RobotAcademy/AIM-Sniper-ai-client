@@ -1,22 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class InterviewPreprocessingRepository(ABC):
-    @abstractmethod
-    def readJsonFile(self, filePath):
-        pass
-
-    @abstractmethod
-    def extractColumns(self, rawDataList):
-        pass
-
-    @abstractmethod
-    def extractColumns_2(self, rawDataList):
-        pass
-
-    @abstractmethod
-    def separateFileByInfo(self, extractedData, filePath):
-        pass
+class InterviewPreprocessingCorpusRepository(ABC):
 
     @abstractmethod
     def loadMecab(self):
@@ -32,10 +17,6 @@ class InterviewPreprocessingRepository(ABC):
 
     @abstractmethod
     def loadSentenceTransformer(self):
-        pass
-
-    @abstractmethod
-    def sampleAnswerAndQuestionIndex(self, totalSize, n, m):
         pass
 
     @abstractmethod
