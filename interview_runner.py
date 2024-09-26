@@ -43,27 +43,54 @@ if __name__ == '__main__':
     separatedFilePath = 'assets\\json_data_separated\\'
     labeledFilePath = 'assets\\json_data_intent_labeled\\'
 
-    # interview.saveConcatenatedRawJsonFile(rawFilePath, concatenatedFilePath)
-    interview.separateJsonFileByInfo(concatenatedFilePath, separatedFilePath)
+    def concatenateData():
+        interview.saveConcatenatedRawJsonFile(rawFilePath, concatenatedFilePath)
 
-    interviewList = interview.flattenFileToList(separatedFilePath)
+    def separateData():
+        interview.separateJsonFileByInfo(concatenatedFilePath, separatedFilePath)
+
+    def getInterviewList():
+        return interview.flattenFileToList(separatedFilePath)
 
     # interviewList = interview.flattenFileToList(os.path.join(separatedFilePath, 'ICT.json'))
 # sample_intent_labeled_808.json :
 # {'협업 능력': 83, '대처 능력': 1192, '적응력': 177, '프로젝트 경험': 75, '자기 개발': 303, '기술적 역량': 73, 'None': 3942}
 
-    # 룰베이스 의도 라벨링
-    labeledInterviewList = interview.intentLabeling(interviewList)
+    # 룰 베이스 의도 라벨링
+    def labelingIntentByRuleBase():
+        interviewList = getInterviewList()
+        labeledInterviewList = interview.intentLabeling(interviewList)
 
-    interviewListIntentIsNone, interviewListIntentIsNotNone = (
-        interview.splitIntentLabeledData(labeledInterviewList, 200))
+        return labeledInterviewList
 
-    sampledNoneIntentQuestion, sampledIntentQuestions = (
+    def saveSampledLabeledInterview():
+        labeledInterviewList = labelingIntentByRuleBase()
+        interviewListIntentIsNone, interviewListIntentIsNotNone = (
+            interview.splitIntentLabeledData(labeledInterviewList, 200))
+
         interview.samplingAndSaveLabeledData(
-            interviewListIntentIsNone, interviewListIntentIsNotNone, 200, labeledFilePath))
+                interviewListIntentIsNone, interviewListIntentIsNotNone, 200, labeledFilePath)
 
-# sample_intent_labeled_1091.json
-# {'협업 능력': 751, '대처 능력': 11440, '적응력': 1711, '프로젝트 경험': 1670, '자기 개발': 2848, '기술적 역량': 91, 'None': 39273}
+    # 규칙 기반 라벨링 vs 정성 평가 라벨링
+    def compareLabeling():
+        filePath = os.path.join(os.getcwd(), 'assets',
+                                'json_data_intent_labeled', 'sample_intent_labeled_1091_qualitative_eval.json')
+        labeledInterviewList = interview.readFile(filePath)
+        differentIntentList = interview.compareLabeledIntent(labeledInterviewList)
+
+        return differentIntentList
+
+
+    intentList = ['협업 능력', '대처 능력', '적응력', '프로젝트 경험', '자기 개발', '기술적 역량']
+    differentIntentList = compareLabeling()
+    countDifferentIntentDict = {intent: 0 for intent in intentList}
+    for intent in intentList:
+        for differentIntent in differentIntentList:
+            if intent == differentIntent.get('rule_based_intent'):
+                countDifferentIntentDict[intent] += 1
+
+    print(countDifferentIntentDict)
+
 
 
     # # 유사도 계산

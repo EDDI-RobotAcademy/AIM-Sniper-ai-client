@@ -154,6 +154,12 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
         return sampledNoneIntentQuestion, sampledIntentQuestions
 
+    def readFile(self, filePath):
+        return self.__interviewPreprocessingFileRepository.readFile(filePath)
+
+    def compareLabeledIntent(self, labeledInterviewList):
+        return self.__interviewPreprocessingIntentRepository.compareLabeledIntent(labeledInterviewList)
+
 
 
 

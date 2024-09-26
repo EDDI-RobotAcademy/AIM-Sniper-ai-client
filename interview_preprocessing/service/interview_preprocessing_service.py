@@ -48,7 +48,15 @@ class InterviewPreprocessingService(ABC):
         pass
 
     @abstractmethod
-    def samplingAndSaveLabeledData(self,
-                                   interviewListIntentIsNone, interviewListIntentIsNotNone, sampleSize, saveFilePath):
+    def samplingAndSaveLabeledData(
+            self, interviewListIntentIsNone, interviewListIntentIsNotNone, sampleSize, saveFilePath):
+        pass
+
+    @abstractmethod
+    def readFile(self, filePath):
+        pass
+
+    @abstractmethod
+    def compareLabeledIntent(self, labeledInterviewList):
         pass
 
