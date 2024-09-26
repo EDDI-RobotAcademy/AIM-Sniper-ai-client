@@ -1,11 +1,15 @@
 import itertools
 import os
 
+from tqdm import tqdm
+
 from interview_preprocessing.repository.interview_preprocessing_corpus_repository_impl import \
     InterviewPreprocessingCorpusRepositoryImpl
 from interview_preprocessing.repository.interview_preprocessing_file_repository_impl import InterviewPreprocessingFileRepositoryImpl
 from interview_preprocessing.repository.interview_preprocessing_intent_repository_impl import \
     InterviewPreprocessingIntentRepositoryImpl
+from interview_preprocessing.repository.interview_preprocessing_openai_repository_impl import \
+    InterviewPreprocessingOpenAIRepositoryImpl
 from interview_preprocessing.service.interview_preprocessing_service import InterviewPreprocessingService
 
 class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
@@ -17,7 +21,7 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
             cls.__instance.__interviewPreprocessingFileRepository = InterviewPreprocessingFileRepositoryImpl.getInstance()
             cls.__instance.__interviewPreprocessingCorpusRepository = InterviewPreprocessingCorpusRepositoryImpl.getInstance()
             cls.__instance.__interviewPreprocessingIntentRepository = InterviewPreprocessingIntentRepositoryImpl().getInstance()
-
+            cls.__instance.__interviewPreprocessingOpenAIRepository =InterviewPreprocessingOpenAIRepositoryImpl().getInstance()
         return cls.__instance
 
     @classmethod
@@ -159,6 +163,19 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
     def compareLabeledIntent(self, labeledInterviewList):
         return self.__interviewPreprocessingIntentRepository.compareLabeledIntent(labeledInterviewList)
+
+    def getLLMIntent(self, inputFile, outputSavePath):
+        dataList = self.__interviewPreprocessingFileRepository.readFile(inputFile)
+
+        for data in tqdm(dataList, total=len(dataList), desc='labeling intent by LLM'):
+            question = data.get('question')
+            intent = self.__interviewPreprocessingOpenAIRepository.generateIntent(question)
+            data['llm_intent'] = intent
+
+        saveFilePath = os.path.join(outputSavePath, f'sample_intent_labeled_{len(dataList)}_llm.json')
+        print(f'Labeling LLM intent is done. ')
+        self.__interviewPreprocessingFileRepository.saveFile(saveFilePath, dataList)
+
 
 
 
