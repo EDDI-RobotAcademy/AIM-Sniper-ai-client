@@ -1,4 +1,5 @@
 import time
+import os
 
 from interview_preprocessing.service.interview_preprocessing_service_impl import InterviewPreprocessingServiceImpl
 def calculateCosineSimilarityByNltk(nAnswer, mQuestion, filePath, interviewList):
@@ -40,25 +41,16 @@ if __name__ == '__main__':
     rawFilePath = 'assets\\json_data_raw\\'
     concatenatedFilePath = 'assets\\json_data_concatenated\\'
     separatedFilePath = 'assets\\json_data_separated\\'
+    labeledFilePath = 'assets\\json_data_intent_labeled\\'
 
-    interview.saveConcatenatedRawJsonFile(rawFilePath, concatenatedFilePath)
+    # interview.saveConcatenatedRawJsonFile(rawFilePath, concatenatedFilePath)
     interview.separateJsonFileByInfo(concatenatedFilePath, separatedFilePath)
+
     interviewList = interview.flattenFileToList(separatedFilePath)
-    
-    # 랜덤으로 답변 리스트, 답변에 대한 실제 응답들, 답변 리스트와 비교할 질문 리스트 추출
-    answerList, realQuestionList, questionList = (
-        interview.samplingData(separatedFilePath, nAnswer=50, mQuestion=10000))
 
-    answerStringList, questionStringList = (
-        interview.transformDataWithPOSTagging(answerList, questionList))
-
-    # print("유사도 계산-----------------------")
-    # sentenceTransformerCosineSimilarityList = (
-    #     interviewPreprocessingService.cosineSimilarityBySentenceTransformer(answerStringList, questionStringList))
-    #
-    # saveFilePath = 'assets\\question_answer_similarity'
-    # interviewPreprocessingService.saveSimilarityResult(sentenceTransformerCosineSimilarityList, answerList, realQuestionList, questionList,
-    #                      saveFilePath)
+    # interviewList = interview.flattenFileToList(os.path.join(separatedFilePath, 'ICT.json'))
+# sample_intent_labeled_808.json :
+# {'협업 능력': 83, '대처 능력': 1192, '적응력': 177, '프로젝트 경험': 75, '자기 개발': 303, '기술적 역량': 73, 'None': 3942}
 
     # 룰베이스 의도 라벨링
     labeledInterviewList = interview.intentLabeling(interviewList)
@@ -66,7 +58,24 @@ if __name__ == '__main__':
     interviewListIntentIsNone, interviewListIntentIsNotNone = (
         interview.splitIntentLabeledData(labeledInterviewList, 200))
 
-    saveFilePath = 'assets\\json_data_intent_labeled'
     sampledNoneIntentQuestion, sampledIntentQuestions = (
         interview.samplingAndSaveLabeledData(
-            interviewListIntentIsNone, interviewListIntentIsNotNone, 200, saveFilePath))
+            interviewListIntentIsNone, interviewListIntentIsNotNone, 200, labeledFilePath))
+
+# sample_intent_labeled_1091.json
+# {'협업 능력': 751, '대처 능력': 11440, '적응력': 1711, '프로젝트 경험': 1670, '자기 개발': 2848, '기술적 역량': 91, 'None': 39273}
+
+
+    # # 유사도 계산
+    # answerList, realQuestionList, questionList = (
+    #     interview.samplingData(separatedFilePath, nAnswer=50, mQuestion=10000))
+
+    # answerStringList, questionStringList = (
+    #     interview.transformDataWithPOSTagging(answerList, questionList))
+
+    # sentenceTransformerCosineSimilarityList = (
+    #     interviewPreprocessingService.cosineSimilarityBySentenceTransformer(answerStringList, questionStringList))
+    #
+    # saveFilePath = 'assets\\question_answer_similarity'
+    # interviewPreprocessingService.saveSimilarityResult(sentenceTransformerCosineSimilarityList, answerList, realQuestionList, questionList,
+    #                      saveFilePath)

@@ -1,6 +1,7 @@
 import glob
 import json
 import os
+import re
 import numpy as np
 from tqdm import tqdm
 
@@ -31,8 +32,12 @@ class InterviewPreprocessingFileRepositoryImpl(InterviewPreprocessingFileReposit
 
             for jsonFilePath in tqdm(jsonFiles, total=len(jsonFiles), desc=f' read json files in {filePath}'):
                 with open(jsonFilePath, 'r', encoding='utf-8') as file:
-                    data = json.load(file)
-                    dataList.append(data)
+                    data = file.read()
+                    cleanedData = re.sub(r'[\x00-\x1f\x7f]', '', data)
+
+                    cleanedData = json.loads(cleanedData)
+                    dataList.append(cleanedData)
+
             return dataList
 
         else:
@@ -45,7 +50,7 @@ class InterviewPreprocessingFileRepositoryImpl(InterviewPreprocessingFileReposit
         try:
             with open(filePath, 'w', encoding='utf-8') as file:
                 json.dump(data, file, ensure_ascii=False, indent=4)
-            print(f'Saved at {filePath}.')
+            print(f'File saved at "{filePath}".')
 
         except PermissionError as e:
             print(f"PermissionError: {e}")
@@ -59,7 +64,7 @@ class InterviewPreprocessingFileRepositoryImpl(InterviewPreprocessingFileReposit
 
         for data in tqdm(rawDataList, total=len(rawDataList), desc='extracting columns'):
             info = data['dataSet']['info']
-            infoKey = '_'.join([info['occupation'], info['experience']])
+            infoKey = info['occupation']
 
             if infoKey not in extractedData:
                 extractedData[infoKey] = []
@@ -67,6 +72,7 @@ class InterviewPreprocessingFileRepositoryImpl(InterviewPreprocessingFileReposit
             extractedData[infoKey].append({
                 'question': data['dataSet']['question']['raw']['text'],
                 'answer': data['dataSet']['answer']['raw']['text'],
+                'summary': data['dataSet']['answer']['summary']['text'],
                 'occupation': data['dataSet']['info']['occupation'],
                 'experience': data['dataSet']['info']['experience'],
             })
@@ -79,7 +85,7 @@ class InterviewPreprocessingFileRepositoryImpl(InterviewPreprocessingFileReposit
             filename = f'{filePath}/{info_key}.json'
             with open(filename, 'w', encoding='utf-8') as json_file:
                 json.dump(data, json_file, ensure_ascii=False, indent=4)
-        print(f'Separate Done. Saved at {filePath} .')
+        print(f'Save separated raw data is done.\nFile saved at "{filePath}" .')
 
         return True
 
