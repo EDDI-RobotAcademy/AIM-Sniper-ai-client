@@ -60,3 +60,7 @@ class InterviewPreprocessingService(ABC):
     def compareLabeledIntent(self, labeledInterviewList):
         pass
 
+    @abstractmethod
+    def getLLMIntent(self, inputFile, outputSavePath):
+        pass
+
