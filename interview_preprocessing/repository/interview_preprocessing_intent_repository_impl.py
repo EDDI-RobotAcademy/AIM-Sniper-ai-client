@@ -146,3 +146,20 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
         flattenedList = list(itertools.chain.from_iterable(doublyLinkedList))
 
         return flattenedList
+
+    def compareLabeledIntent(self, labeledInterviewList):
+        differentIntentList = []
+
+        for labeledInterview in labeledInterviewList:
+            ruleBasedIntent = labeledInterview.get('rule_based_intent')
+            qualitativeEvalIntent = labeledInterview.get('qualitative_eval_intent')
+            if ruleBasedIntent != qualitativeEvalIntent:
+                differentIntentList.append({
+                    "question": labeledInterview.get('question'),
+                    "rule_based_intent": ruleBasedIntent,
+                    "qualitative_eval_intent": qualitativeEvalIntent
+                })
+
+        return differentIntentList
+
+

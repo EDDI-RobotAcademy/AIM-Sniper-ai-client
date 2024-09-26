@@ -34,9 +34,13 @@ class InterviewPreprocessingFileRepositoryImpl(InterviewPreprocessingFileReposit
                 with open(jsonFilePath, 'r', encoding='utf-8') as file:
                     data = file.read()
                     cleanedData = re.sub(r'[\x00-\x1f\x7f]', '', data)
+                    try:
+                        cleanedData = json.loads(cleanedData)
+                        dataList.append(cleanedData)
 
-                    cleanedData = json.loads(cleanedData)
-                    dataList.append(cleanedData)
+                    except json.JSONDecodeError as e:
+                        print(f"JSONDecodeError 발생: {e}")
+                        pass
 
             return dataList
 

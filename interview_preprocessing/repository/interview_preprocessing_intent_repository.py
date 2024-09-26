@@ -26,3 +26,7 @@ class InterviewPreprocessingIntentRepository(ABC):
     @abstractmethod
     def flattenDimensionOfList(self, doublyLinkedList):
         pass
+
+    @abstractmethod
+    def compareLabeledIntent(self, labeledInterviewList):
+        pass
