@@ -1,8 +1,5 @@
 import itertools
 import os
-import numpy as np
-
-from tqdm import tqdm
 
 from interview_preprocessing.repository.interview_preprocessing_corpus_repository_impl import \
     InterviewPreprocessingCorpusRepositoryImpl
@@ -31,11 +28,13 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         return cls.__instance
 
     def saveConcatenatedRawJsonFile(self, readFilePath, saveFilePath):
+
         dataList = self.__interviewPreprocessingFileRepository.readFile(readFilePath)
 
         os.makedirs(saveFilePath, exist_ok=True)
         savePath = os.path.join(saveFilePath, f'raw_data_concatenated_{len(dataList)}.json')
 
+        print('Save concatenated raw data is done.')
         self.__interviewPreprocessingFileRepository.saveFile(savePath, dataList)
 
     def separateJsonFileByInfo(self, readFilePath, saveFilePath):
@@ -44,6 +43,8 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
     def flattenFileToList(self, filePath):
         separatedJsonFiles = self.__interviewPreprocessingFileRepository.readFile(filePath)
+        if '.json' in filePath:
+            return separatedJsonFiles
         interviewList = list(itertools.chain(*separatedJsonFiles))
 
         return interviewList
@@ -119,7 +120,7 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
                     file.write(f"**질문{i + 1}**: {questionList[index]}\n")
                     file.write(f"**유사도**: {topFiveValue[i]}\n")
                 file.write("-------------------------------------------------------------------\n")
-            print(f"file saved at {saveFilePath}.")
+            print(f"File saved at {saveFilePath}.")
 
     def intentLabeling(self, interviewList):
         labeledInterviewList = self.__interviewPreprocessingIntentRepository.intentLabelingByRuleBase(interviewList)
@@ -145,8 +146,9 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         os.makedirs(saveFilePath, exist_ok=True)
 
         saveIntentNoneLabeledFileName = os.path.join(saveFilePath, f'sample_intent_none_{len(sampledNoneIntentQuestion)}.json')
-        saveIntentLabeledFileName = os.path.join(saveFilePath, f'sample_intent_labeled_{len(sampledIntentQuestions)}.json')
-
+        saveIntentLabeledFileName = os.path.join(saveFilePath, f'sample_intent_labeled_{len(sampledIntentQuestions)}.json'
+                                                    )
+        print('Save sampling labeled data is done.')
         self.__interviewPreprocessingFileRepository.saveFile(saveIntentLabeledFileName, sampledIntentQuestions)
         self.__interviewPreprocessingFileRepository.saveFile(saveIntentNoneLabeledFileName, sampledNoneIntentQuestion)
 
