@@ -80,16 +80,16 @@ if __name__ == '__main__':
 
         return differentIntentList
 
+    def countDifferentLabel():
+        intentList = ['협업 능력', '대처 능력', '적응력', '프로젝트 경험', '자기 개발', '기술적 역량']
+        differentIntentList = compareLabeling()
+        countDifferentIntentDict = {intent: 0 for intent in intentList}
+        for intent in intentList:
+            for differentIntent in differentIntentList:
+                if intent == differentIntent.get('rule_based_intent'):
+                    countDifferentIntentDict[intent] += 1
 
-    intentList = ['협업 능력', '대처 능력', '적응력', '프로젝트 경험', '자기 개발', '기술적 역량']
-    differentIntentList = compareLabeling()
-    countDifferentIntentDict = {intent: 0 for intent in intentList}
-    for intent in intentList:
-        for differentIntent in differentIntentList:
-            if intent == differentIntent.get('rule_based_intent'):
-                countDifferentIntentDict[intent] += 1
-
-    print(countDifferentIntentDict)
+        return countDifferentIntentDict
 
 
 
