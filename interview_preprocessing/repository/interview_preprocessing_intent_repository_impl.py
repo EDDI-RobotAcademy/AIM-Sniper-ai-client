@@ -1,6 +1,8 @@
 import itertools
 import random
 from abc import ABC, abstractmethod
+from collections import defaultdict
+
 
 class InterviewPreprocessingIntentRepositoryImpl(ABC):
     __instance = None
@@ -148,18 +150,63 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
         return flattenedList
 
     def compareLabeledIntent(self, labeledInterviewList):
-        differentIntentList = []
+        compareRuleAndQualitative = []
+        compareRuleAndGPT = []
+        compareQualitativeAndGPT = []
 
         for labeledInterview in labeledInterviewList:
             ruleBasedIntent = labeledInterview.get('rule_based_intent')
             qualitativeEvalIntent = labeledInterview.get('qualitative_eval_intent')
+            GPTIntent = labeledInterviewList.get('llm_intent')
+
             if ruleBasedIntent != qualitativeEvalIntent:
-                differentIntentList.append({
+                compareRuleAndQualitative.append({
                     "question": labeledInterview.get('question'),
                     "rule_based_intent": ruleBasedIntent,
-                    "qualitative_eval_intent": qualitativeEvalIntent
+                    "qualitative_eval_intent": qualitativeEvalIntent,
+                    "llm_intent": GPTIntent
+                })
+            if ruleBasedIntent != GPTIntent:
+                compareRuleAndGPT.append({
+                    "question": labeledInterview.get('question'),
+                    "rule_based_intent": ruleBasedIntent,
+                    "qualitative_eval_intent": qualitativeEvalIntent,
+                    "llm_intent": GPTIntent
+                })
+            if qualitativeEvalIntent != GPTIntent:
+                compareQualitativeAndGPT.append({
+                    "question": labeledInterview.get('question'),
+                    "rule_based_intent": ruleBasedIntent,
+                    "qualitative_eval_intent": qualitativeEvalIntent,
+                    "llm_intent": GPTIntent
                 })
 
-        return differentIntentList
+        return compareRuleAndQualitative, compareRuleAndGPT, compareQualitativeAndGPT
+
+    def removeQuestionIfKeywordIn(self, keyword, interviewList):
+        newInterviewList = []
+        for interview in interviewList:
+            if keyword not in interview.get('question'):
+                newInterviewList.append(interview)
+                continue
+            newInterviewList.append(interview)
+
+        return newInterviewList
+
+    def calculateDifferentIntentRatios(self, interviewList, intentKey, compareKey):
+        # 각 intent를 기준으로 데이터를 그룹화
+        intentGroups = defaultdict(list)
+        for item in interviewList:
+            intentGroups[item.get(intentKey)].append(item)
+
+        # 그룹별로 다른 의도 비율 계산
+        intentDiffRatios = {}
+        for intent, group in intentGroups.items():
+            totalCount = len(group)
+            differentCount = sum(1 for item in group if item.get(intentKey) != item.get(compareKey))
+            diffRatio = differentCount / totalCount * 100 if totalCount > 0 else 0
+            intentDiffRatios[intent] = round(diffRatio, 3)
+
+        return intentDiffRatios
 
 
