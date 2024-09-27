@@ -1,6 +1,7 @@
 import itertools
 import os
 
+import pandas as pd
 from tqdm import tqdm
 
 from interview_preprocessing.repository.interview_preprocessing_corpus_repository_impl import \
@@ -176,6 +177,35 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         print(f'Labeling LLM intent is done. ')
         self.__interviewPreprocessingFileRepository.saveFile(saveFilePath, dataList)
 
+    def comparisonResultToCsv(self, interviewList):
+        ruleVsQualitativeRatios = (self.__interviewPreprocessingIntentRepository.
+                                      calculateDifferentIntentRatios(interviewList, 'rule_based_intent',
+                                                                       'qualitative_eval_intent'))
+
+        ruleVsLlmRatios = (self.__interviewPreprocessingIntentRepository.
+                              calculateDifferentIntentRatios(interviewList, 'rule_based_intent', 'llm_intent'))
+
+        qualitativeVsLlmRatios = (self.__interviewPreprocessingIntentRepository.
+                                     calculateDifferentIntentRatios(interviewList, 'qualitative_eval_intent',
+                                                                      'llm_intent'))
+
+        ruleVsQualitativeDf = pd.DataFrame.from_dict(ruleVsQualitativeRatios,
+                                                        orient='index', columns=['rule_vs_qualitative(%)'])
+        ruleVsLlmRatiosDf = pd.DataFrame.from_dict(ruleVsLlmRatios,
+                                                       orient='index', columns=['rule_vs_llm(%)'])
+        qualitativeVsLlmRatios = pd.DataFrame.from_dict(qualitativeVsLlmRatios,
+                                                           orient='index', columns=['qualitative_vs_llm(%)'])
+
+        comparisonResult = pd.concat([ruleVsQualitativeDf, ruleVsLlmRatiosDf, qualitativeVsLlmRatios], axis=1)
+
+        csvPath = os.path.join(os.getcwd(), 'assets', 'csv_data')
+        if not os.path.exists(csvPath):
+            os.mkdir(csvPath)
+
+        comparisonResult.to_csv(os.path.join(csvPath, 'intent_comparison_ratios.csv'))
+        print('intent_comparison_ratios.csv 생성 완료')
+
+        return comparisonResult
 
 
 

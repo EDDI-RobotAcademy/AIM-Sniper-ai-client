@@ -64,3 +64,7 @@ class InterviewPreprocessingService(ABC):
     def getLLMIntent(self, inputFile, outputSavePath):
         pass
 
+    @abstractmethod
+    def comparisonResultToCsv(self, interviewList):
+        pass
+

@@ -84,6 +84,15 @@ def countDifferentLabel(filePath):
 
     return countDifferentIntentDict
 
+def comparisonRatioResultToCsv():
+    filePath = os.path.join(os.getcwd(), 'assets',
+                            'json_data_intent_labeled', 'sample_intent_labeled_1091_llm.json')
+    labeledInterviewList = interview.readFile(filePath)
+    interviewList = interview.removeQuestionIfKeywordIn('산사태', labeledInterviewList)
+
+    interview.comparisonResultToCsv(interviewList)
+
+
 
 if __name__ == '__main__':
     rawFilePath = 'assets\\json_data_raw\\'
