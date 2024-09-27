@@ -52,27 +52,65 @@ class ReportAboutFinanceRepositoryImpl(ReportAboutFinanceRepository):
             df.columns = newColList
 
             numerical_cols = df.select_dtypes(exclude="O").columns
-            df.set_index("concept_id", inplace=True)
+            df.set_index(["label_ko", "label_en"], inplace=True)
             df.drop(columns=[col for col in df.columns if col not in numerical_cols], axis=1, inplace=True)
 
         return dfs
 
-    def getFinancailStatements(self, corpCode):
+    def selectIncomeDocument(self, incomeDf, comprehensiveIncomeDf):
+        if comprehensiveIncomeDf is None:
+            return incomeDf
+
+        if incomeDf is None:
+            return comprehensiveIncomeDf
+
+        return incomeDf
+
+    def getFinancialStatements(self, corpCode):
+        print(os.getcwd())
         fs = dart.fs.extract(
             corp_code=corpCode, report_tp='annual',
             bgn_de=self.SEARCH_START_YEAR, end_de=self.SEARCH_END_YEAR,
             dataset="web", progressbar=False)
 
-        balanceSheet, incomeStatement, cashFlow = \
-                        self.preprocessFSFromDart(fs['bs'], fs['is'], fs['cf'])
+        # [TODO] raw_data local에 저장
 
-        return balanceSheet, incomeStatement, cashFlow
+        balance, income, cashFlow = \
+            self.preprocessFSFromDart(fs['bs'], self.selectIncomeDocument(fs['is'], fs['cis']), fs['cf'])
 
+        return balance, income, cashFlow
 
-    def getRevenueTrend(self, revenue):
-        return revenue.to_dict()
+    def checkLabelNameInFS(self, df, *probableNames):
+        for index in df.index:
+            if any(keyword in "".join(index) for keyword in probableNames):
+                return index
+            else:
+                continue
 
-    def getReceivableTurnover(self, revenue, tradeReceivables):
+        return 0
+
+    def checkLabelComboNameInFS(self, df, *comboNames):
+        for index in df.index:
+            if all(keyword in "".join(index) for keyword in comboNames):
+                return index
+            else:
+                continue
+
+        return 0
+
+    def getRevenueTrend(self, income):
+        name = self.checkLabelNameInFS(
+            income, "매출액", "영업수익", "수익(매출액)", "Revenue", "Sales")
+
+        return income.loc[name].to_dict()
+
+    def getReceivableTurnover(self, income, balance):
+        revenueName = self.checkLabelNameInFS(income, "매출액", "영업수익", "수익(매출액)", "Revenue", "Sales")
+        receivableName = self.checkLabelNameInFS(balance, "매출채권", "trade receivables")
+
+        revenue = income.loc[revenueName]
+        tradeReceivables = balance.loc[receivableName]
+
         revenue.index = revenue.index.map(lambda x: x[:4])
         tradeReceivables.index = tradeReceivables.index.map(lambda x: x[:4])
 
@@ -81,25 +119,36 @@ class ReportAboutFinanceRepositoryImpl(ReportAboutFinanceRepository):
 
         return receivableTturnover.to_dict()
 
-    def getOperatingCashFlow(self, operatingCashFlow):
-        return operatingCashFlow.to_dict()
+    def getOperatingCashFlow(self, cashFlow):
+        name = self.checkLabelComboNameInFS(cashFlow, "영업활동", "현금흐름")
+
+        return cashFlow.loc[name].to_dict()
 
     def getProfitDataFromDart(self, corpCodeDict):
         profitDataDict = {}
 
-        for corpName, corpCode in tqdm(corpCodeDict.items(), desc="getProfitDataFromDart"):
-            balanceSheet, incomeStatement, cashFlow = self.getFinancailStatements(corpCode)
+        for corpName, corpCode in corpCodeDict.items():
+            try:
+                balance, income, cashFlow = self.getFinancialStatements(corpCode)
+            except Exception as e:
+                print(f"[NOT_PASS '{corpName}({corpCode})-FSDocu'] => {e}")
+                pass
 
-            revenueTrend = self.getRevenueTrend(incomeStatement.loc["ifrs-full_Revenue"])
-            receivableTurnover = self.getReceivableTurnover(
-                                                    incomeStatement.loc["ifrs-full_Revenue"],
-                                                    balanceSheet.loc["ifrs-full_CurrentTradeReceivables"])
-            operatingCashFlow = self.getOperatingCashFlow(cashFlow.loc["ifrs-full_CashFlowsFromUsedInOperatingActivities"])
+            try:
+                revenueTrend = self.getRevenueTrend(income)
+                receivableTurnover = self.getReceivableTurnover(income, balance)
+                operatingCashFlow = self.getOperatingCashFlow(cashFlow)
+
+            except Exception as e:
+                print(f"[NOT_PASS '{corpName}({corpCode})-FSValue'] => {e}")
+                pass
 
             profitDataDict[corpName] = {"revenueTrend": revenueTrend,
                                        "receivableTurnover": receivableTurnover,
                                        "operatingCashFlow":operatingCashFlow}
 
-        self.saveData(profitDataDict, "../data/dart_financial_statements/preprocessed_data_v1")
+            print(f"*** '{corpName}' finish - {profitDataDict}")
+
+        # self.saveData(profitDataDict, "../data/dart_financial_statements/preprocessed_data_v1")
 
         return profitDataDict
