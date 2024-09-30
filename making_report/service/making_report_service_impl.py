@@ -1,7 +1,7 @@
 import pickle
 
-from making_report.repository.report_about_corp_business_repository_impl import ReportAboutCorpBusinessRepositoryImpl
-from making_report.repository.report_about_finance_repository_impl import ReportAboutFinanceRepositoryImpl
+from making_report.repository.data_for_corp_business_repository_impl import DataForCorpBusinessRepositoryImpl
+from making_report.repository.data_for_finance_repository_impl import DataForFinanceRepositoryImpl
 from making_report.service.making_report_service import MakingReportService
 
 
@@ -11,8 +11,8 @@ class MakingReportServiceImpl(MakingReportService):
     def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super().__new__(cls)
-            cls.__instance.__corpBusinessRepository = ReportAboutCorpBusinessRepositoryImpl.getInstance()
-            cls.__instance.__financeRepository = ReportAboutFinanceRepositoryImpl.getInstance()
+            cls.__instance.__corpBusinessRepository = DataForCorpBusinessRepositoryImpl.getInstance()
+            cls.__instance.__financeRepository = DataForFinanceRepositoryImpl.getInstance()
 
         return cls.__instance
 

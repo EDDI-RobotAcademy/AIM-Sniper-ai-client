@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from tqdm import tqdm
 
-from making_report.repository.report_about_corp_business_repository import ReportAboutCorpBusinessRepository
+from making_report.repository.data_for_corp_business_repository import DataForCorpBusinessRepository
 
 load_dotenv()
 
@@ -26,7 +26,7 @@ if not openaiApiKey:
     raise ValueError('API Key가 준비되어 있지 않습니다!')
 
 
-class ReportAboutCorpBusinessRepositoryImpl(ReportAboutCorpBusinessRepository):
+class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
     __instance = None
     WANTED_CORP_LIST = [
         'SK네트웍스', 'SK이노베이션', 'SK텔레콤', 'SK하이닉스', '삼성전자', 'LG에너지솔루션', 'NAVER', '삼성바이오로직스',

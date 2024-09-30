@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class ReportAboutCorpBusinessRepository(ABC):
+class DataForCorpBusinessRepository(ABC):
     @abstractmethod
     def saveData(self, dictData, directory):
         pass

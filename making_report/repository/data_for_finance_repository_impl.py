@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from tqdm import tqdm
 
-from making_report.repository.report_about_finance_repository import ReportAboutFinanceRepository
+from making_report.repository.data_for_finance_repository import DataForFinanceRepository
 
 load_dotenv()
 
@@ -14,7 +14,7 @@ dartApiKey = os.getenv('DART_API_KEY')
 if not dartApiKey:
     raise ValueError("Dart API Key가 준비되어 있지 않습니다.")
 
-class ReportAboutFinanceRepositoryImpl(ReportAboutFinanceRepository):
+class DataForFinanceRepositoryImpl(DataForFinanceRepository):
     __instance = None
     SEARCH_YEAR_GAP = 2
     SEARCH_START_YEAR = f'{(datetime.today() - timedelta(days=365*SEARCH_YEAR_GAP)).year}1231'
