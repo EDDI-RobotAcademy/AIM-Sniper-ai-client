@@ -49,3 +49,8 @@ class ReportAboutCorpBusinessRepository(ABC):
     @abstractmethod
     def preprocessRawData(self, rawData):
         pass
+
+    @abstractmethod
+    def changeContentStyle(self, preprocessedData):
+        pass
+
