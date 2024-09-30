@@ -149,40 +149,6 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
 
         return flattenedList
 
-    def compareLabeledIntent(self, labeledInterviewList):
-        compareRuleAndQualitative = []
-        compareRuleAndGPT = []
-        compareQualitativeAndGPT = []
-
-        for labeledInterview in labeledInterviewList:
-            ruleBasedIntent = labeledInterview.get('rule_based_intent')
-            qualitativeEvalIntent = labeledInterview.get('qualitative_eval_intent')
-            GPTIntent = labeledInterviewList.get('llm_intent')
-
-            if ruleBasedIntent != qualitativeEvalIntent:
-                compareRuleAndQualitative.append({
-                    "question": labeledInterview.get('question'),
-                    "rule_based_intent": ruleBasedIntent,
-                    "qualitative_eval_intent": qualitativeEvalIntent,
-                    "llm_intent": GPTIntent
-                })
-            if ruleBasedIntent != GPTIntent:
-                compareRuleAndGPT.append({
-                    "question": labeledInterview.get('question'),
-                    "rule_based_intent": ruleBasedIntent,
-                    "qualitative_eval_intent": qualitativeEvalIntent,
-                    "llm_intent": GPTIntent
-                })
-            if qualitativeEvalIntent != GPTIntent:
-                compareQualitativeAndGPT.append({
-                    "question": labeledInterview.get('question'),
-                    "rule_based_intent": ruleBasedIntent,
-                    "qualitative_eval_intent": qualitativeEvalIntent,
-                    "llm_intent": GPTIntent
-                })
-
-        return compareRuleAndQualitative, compareRuleAndGPT, compareQualitativeAndGPT
-
     def removeQuestionIfKeywordIn(self, keyword, interviewList):
         newInterviewList = []
         for interview in interviewList:
@@ -198,7 +164,6 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
         intentGroups = defaultdict(list)
         for item in interviewList:
             intentGroups[item.get(intentKey)].append(item)
-
         # 그룹별로 다른 의도 비율 계산
         intentDiffRatios = {}
         for intent, group in intentGroups.items():
@@ -207,6 +172,15 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
             diffRatio = differentCount / totalCount * 100 if totalCount > 0 else 0
             intentDiffRatios[intent] = round(diffRatio, 3)
 
+        totalLength = len(interviewList)
+        cnt = 0
+        for interview in interviewList:
+            if interview.get(intentKey) != interview.get(compareKey):
+                cnt += 1
+
+        totalDiff = (cnt / totalLength) * 100
+        totalDiff = round(totalDiff, 3)
+        print(f'difference between ({intentKey}, {compareKey}) : {totalDiff}%')
         return intentDiffRatios
 
 

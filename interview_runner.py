@@ -44,13 +44,9 @@ def concatenateRawData(rawFilePath, concatenatedFilePath):
 def separateData(concatenatedFilePath, separatedFilePath):
     interview.separateJsonFileByInfo(concatenatedFilePath, separatedFilePath)
 
-def getInterviewList(separatedFilePath):
-    return interview.flattenFileToList(separatedFilePath)
-
-
 # 룰 베이스 의도 라벨링
 def labelingIntentByRuleBase(separatedFilePath):
-    interviewList = getInterviewList(separatedFilePath)
+    interviewList = interview.flattenFileToList(separatedFilePath)
     labeledInterviewList = interview.intentLabeling(interviewList)
 
     return labeledInterviewList
@@ -67,32 +63,9 @@ def getLLMIntent(inputFile, labeledFilePath):
     interview.getLLMIntent(inputFile, labeledFilePath)
 
 # 규칙 기반 라벨링 vs 정성 평가 라벨링
-def compareLabeling(filePath):
-    labeledInterviewList = interview.readFile(filePath)
-    differentIntentList = interview.compareLabeledIntent(labeledInterviewList)
-
-    return differentIntentList
-
-def countDifferentLabel(filePath):
-    intentList = ['협업 능력', '대처 능력', '적응력', '프로젝트 경험', '자기 개발', '기술적 역량']
-    differentIntentList = compareLabeling(filePath)
-    countDifferentIntentDict = {intent: 0 for intent in intentList}
-    for intent in intentList:
-        for differentIntent in differentIntentList:
-            if intent == differentIntent.get('rule_based_intent'):
-                countDifferentIntentDict[intent] += 1
-
-    return countDifferentIntentDict
-
-def comparisonRatioResultToCsv():
-    filePath = os.path.join(os.getcwd(), 'assets',
-                            'json_data_intent_labeled', 'sample_intent_labeled_1091_llm.json')
-    labeledInterviewList = interview.readFile(filePath)
-    interviewList = interview.removeQuestionIfKeywordIn('산사태', labeledInterviewList)
-
-    interview.comparisonResultToCsv(interviewList)
-
-
+def comparisonRatioResultToCsv(filePath, keywordForRemove=None):
+    labeledInterviewList = interview.readFile(filePath, keywordForRemove)
+    interview.comparisonResultToCsv(labeledInterviewList)
 
 if __name__ == '__main__':
     rawFilePath = 'assets\\json_data_raw\\'
@@ -100,15 +73,14 @@ if __name__ == '__main__':
     separatedFilePath = 'assets\\json_data_separated\\'
     labeledFilePath = 'assets\\json_data_intent_labeled\\'
     labeledInputFile = os.path.join(labeledFilePath, 'sample_intent_labeled_1091_qualitative_eval.json')
-    compareLabelFilePath = os.path.join(labeledFilePath, 'sample_intent_labeled_1091_qualitative_eval.json')
+    compareLabelFilePath = os.path.join(labeledFilePath, 'sample_intent_labeled_1091_llm.json')
 
     # concatenateRawData(rawFilePath, concatenatedFilePath)
     # separateData(concatenatedFilePath, separatedFilePath)
     # labelingIntentByRuleBase(separatedFilePath)
     # saveSampledLabeledInterview(separatedFilePath, labeledFilePath)
     # getLLMIntent(labeledInputFile, labeledFilePath)
-    countDifferentIntentDict = countDifferentLabel(compareLabelFilePath)
-    print('count of difference Label : ', countDifferentIntentDict)
+    comparisonRatioResultToCsv(compareLabelFilePath, '산사태')
 
 
 

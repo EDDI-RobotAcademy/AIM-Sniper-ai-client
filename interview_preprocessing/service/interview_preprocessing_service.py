@@ -53,11 +53,7 @@ class InterviewPreprocessingService(ABC):
         pass
 
     @abstractmethod
-    def readFile(self, filePath):
-        pass
-
-    @abstractmethod
-    def compareLabeledIntent(self, labeledInterviewList):
+    def readFile(self, filePath, keyword):
         pass
 
     @abstractmethod
