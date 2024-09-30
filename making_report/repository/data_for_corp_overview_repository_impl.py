@@ -46,3 +46,37 @@ class DataForCorpOverviewRepositoryImpl(DataForCorpOverviewRepository):
         self.saveData(overviewDict, "../data/dart_corp_overview/raw_data")
 
         return overviewDict
+
+    def preprocessRawData(self, corpOverviewRawData):
+        keysInUse = ['est_dt', 'corp_cls', 'ceo_nm', 'adres', 'hm_url']
+        overviewDict = {}
+
+        for corpName, overview in corpOverviewRawData.items():
+            data = {}
+
+            for key in keysInUse:
+                if bool(overview.get(key)):
+                    data[key] = "-"
+
+                if key == "adres":
+                    adresList = overview.get(key).split()
+                    if adresList[0][-1] == "시":
+                        data[key] = " ".join(adresList[:2])
+                    else:
+                        data[key] = " ".join(adresList[:3])
+
+                elif key == "corp_cls":
+                    changeKor = {"Y": "유가", "K": "코스닥", "N": "코넥스", "E": "기타"}
+                    data[key] = changeKor[overview.get(key)]
+
+                elif key == "est_dt":
+                    workingYear = datetime.today().year - int(overview.get(key)[:4]) + 1
+                    data[key] = f"{str(workingYear)}년차 ({int(overview.get(key)[:4])})"
+
+                else:
+                    data[key] = overview.get(key)
+
+            overviewDict[corpName] = data
+
+        self.saveData(overviewDict, "../data/dart_corp_overview/preprocessed_data_v1")
+        return overviewDict
