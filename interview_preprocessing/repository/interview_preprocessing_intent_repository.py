@@ -28,10 +28,6 @@ class InterviewPreprocessingIntentRepository(ABC):
         pass
 
     @abstractmethod
-    def compareLabeledIntent(self, labeledInterviewList):
-        pass
-
-    @abstractmethod
     def removeQuestionIfKeywordIn(self, keyword, interviewList):
         pass
 

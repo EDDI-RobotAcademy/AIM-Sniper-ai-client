@@ -159,11 +159,12 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
         return sampledNoneIntentQuestion, sampledIntentQuestions
 
-    def readFile(self, filePath):
-        return self.__interviewPreprocessingFileRepository.readFile(filePath)
+    def readFile(self, filePath, keyword=None):
+        interviewList = self.__interviewPreprocessingFileRepository.readFile(filePath)
+        if keyword != None:
+            interviewList = self.__interviewPreprocessingIntentRepository.removeQuestionIfKeywordIn(keyword, interviewList)
 
-    def compareLabeledIntent(self, labeledInterviewList):
-        return self.__interviewPreprocessingIntentRepository.compareLabeledIntent(labeledInterviewList)
+        return interviewList
 
     def getLLMIntent(self, inputFile, outputSavePath):
         dataList = self.__interviewPreprocessingFileRepository.readFile(inputFile)
@@ -189,18 +190,16 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
                                      calculateDifferentIntentRatios(interviewList, 'qualitative_eval_intent',
                                                                       'llm_intent'))
 
-        ruleVsQualitativeDf = pd.DataFrame.from_dict(ruleVsQualitativeRatios,
-                                                        orient='index', columns=['rule_vs_qualitative(%)'])
-        ruleVsLlmRatiosDf = pd.DataFrame.from_dict(ruleVsLlmRatios,
-                                                       orient='index', columns=['rule_vs_llm(%)'])
-        qualitativeVsLlmRatios = pd.DataFrame.from_dict(qualitativeVsLlmRatios,
-                                                           orient='index', columns=['qualitative_vs_llm(%)'])
+        comparisonResult = pd.DataFrame({
+            'rule_vs_qualitative(%)': ruleVsQualitativeRatios,
+            'rule_vs_llm(%)': ruleVsLlmRatios,
+            'qualitative_vs_llm(%)': qualitativeVsLlmRatios
+        })
 
-        comparisonResult = pd.concat([ruleVsQualitativeDf, ruleVsLlmRatiosDf, qualitativeVsLlmRatios], axis=1)
+        print('comparisonResult : \n', comparisonResult)
 
         csvPath = os.path.join(os.getcwd(), 'assets', 'csv_data')
-        if not os.path.exists(csvPath):
-            os.mkdir(csvPath)
+        os.makedirs(csvPath, exist_ok=True)
 
         comparisonResult.to_csv(os.path.join(csvPath, 'intent_comparison_ratios.csv'))
         print('intent_comparison_ratios.csv 생성 완료')
