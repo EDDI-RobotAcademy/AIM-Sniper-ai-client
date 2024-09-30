@@ -28,5 +28,6 @@ class MakingReportServiceImpl(MakingReportService):
 
         corpBusinessRawData = self.__corpBusinessRepository.getRawDataFromDart()
         corpBusinessPreprocessedData = self.__corpBusinessRepository.preprocessRawData(corpBusinessRawData)
+        corpBusinessSummary = self.__corpBusinessRepository.changeContentStyle(corpBusinessPreprocessedData)
 
         financeProfitDict = self.__financeRepository.getProfitDataFromDart(corpCodeDict)
