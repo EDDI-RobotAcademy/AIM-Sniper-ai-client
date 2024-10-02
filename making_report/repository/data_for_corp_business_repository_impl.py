@@ -223,7 +223,7 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
                 temperature=0.7,
             )
 
-            changedContextDict[corpName] = response.choices[0]['message']['content']
+            changedContextDict[corpName] = {"businessSummary": response.choices[0]['message']['content']}
 
         self.saveData(changedContextDict, "../data/dart_corp_business/preprocessed_data_v3")
 
