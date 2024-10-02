@@ -8,20 +8,22 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
     __instance = None
     RANDOM_SEED = 42
     OVERCOME_KEYWORD = ['상사', '대처', '어떻게 해결', '예기치', '문제', '예상', '다르', '노하우', '극복', '동료',
-                        '갈등', '타 부서와', '다른 부서와', '분쟁' '위기', '산사태']
+                        '갈등', '타 부서와', '다른 부서와', '분쟁' '위기', '산사태', '코드 리뷰']
 
     ADAPTABILITY_KEYWORD = ['변화', '새로운 환경', '적응', '부서에 배치', '다른 부서에']
 
-    COWORKING_KEYWORD = ['어떤 사람', '조직 내', '어떤 역할', '어떠한 역할', '포지션', '무슨 역할', '다를 경우', '사교성']
+    COWORKING_KEYWORD = ['어떤 사람', '조직 내', '어떤 역할', '어떠한 역할', '포지션', '무슨 역할', '다를 경우', '사교성', '협업', '동아리']
 
     PROJECT_KEYWORD = ['프로젝트', '책임', '팀워크', '리더십', '일정 관리', '목표 설정', '협업 과정', '성과 도출']
 
-    SELF_DEVELOPMENT_KEYWORD = ['학습', '성장', '자기 주도', '새로운 기술', '트렌드 파악', '자격증',
-                                '교육 참여', '개인 목표', '스킬 향상', '공부', '스터디']
+    SELF_DEVELOPMENT_KEYWORD = ['학습', '성장', '자기 주도', '새로운 기술', '트렌드 파악', '자격증', '아이씨티 전문성',
+                                '교육 참여', '개인 목표', '스킬 향상', '공부', '스터디', '개발 능력 향상']
 
     SKILL_KEYWORD = ['새로운 언어', '프로그래밍 언어', '개발 도구', '시스템 설계', '코드 최적화', '알고리즘', '데이터베이스',
-                     '성능 향상', '기술 스택', '소프트웨어 개발', '테스트 자동화', '애자일 방법론', 'CI/CD',
-                     '클라우드 컴퓨팅', '버전 관리', 'API 설계', '프레임워크', '보안', '커널 분석', '데이터 분석', '분석 기법']
+                     '성능 향상', '기술 스택', '소프트웨어 개발', '테스트 자동화', '애자일 방법론', '클라우드 컴퓨팅', '버전 관리',
+                     '독커', '도커', '프레임워크', '보안', '커널 분석','소프트웨어', '오에스', '리팩토링', '테스트 코드', '디엔에스',
+                     '에이치티티피','에이치티티피에스', '페어 프로그래밍', '좋은 개발 문화', '설계 프로그램', '아이씨티 역량',
+                     '아이피 주소', '메서드']
 
     def __new__(cls):
         if cls.__instance is None:
@@ -43,20 +45,23 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
             interview['rule_based_intent'] = None
 
             if any(keyword in question for keyword in self.COWORKING_KEYWORD):
-                if all(keyword not in question for keyword in ['캐릭터', '게임', '창의성', '산사태', '존경하는 인물']):
+                if all(keyword not in question for keyword in ['캐릭터', '게임', '창의성', '존경하는 인물']):
                     interview['rule_based_intent'] = '협업 능력'
             elif any(keyword in question for keyword in self.OVERCOME_KEYWORD):
-                interview['rule_based_intent'] = '대처 능력'
+                if all(keyword not in question for keyword in ['산사태', '영어로 서류', '제도적인 부패', '고령화', '십 년 후',
+                                                               '고객사', '진상', '연구와 기업', '영업', '공사']):
+                    interview['rule_based_intent'] = '대처 능력'
             elif any(keyword in question for keyword in self.ADAPTABILITY_KEYWORD):
                 if all(keyword not in question for keyword in ['교번 근무', '배치', '물류를 둘러싼 환경', '최근 물류 산업']):
                     interview['rule_based_intent'] = '적응력'
             elif any(keyword in question for keyword in self.PROJECT_KEYWORD):
-                if all(keyword not in question for keyword in ['창의성과 팀워크', '산사태', '역할', '경영을 책임', '아이디어', '기법']):
+                if all(keyword not in question for keyword in ['창의성', '팀워크', '산사태', '역할', '경영을 책임', '아이디어', '기법']):
                     interview['rule_based_intent'] = '프로젝트 경험'
             elif any(keyword in question for keyword in self.SELF_DEVELOPMENT_KEYWORD):
-                interview['rule_based_intent'] = '자기 개발'
+                if all(keyword not in question for keyword in ['기억에 남는 과목']):
+                    interview['rule_based_intent'] = '자기 개발'
             elif any(keyword in question for keyword in self.SKILL_KEYWORD):
-                if all(keyword not in question for keyword in ['이슈']):
+                if all(keyword not in question for keyword in ['이슈', '마케팅', '글로벌 시대']):
                     interview['rule_based_intent'] = '기술적 역량'
 
         return interviewList

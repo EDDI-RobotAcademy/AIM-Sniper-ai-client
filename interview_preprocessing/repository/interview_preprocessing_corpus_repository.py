@@ -18,10 +18,12 @@ class InterviewPreprocessingCorpusRepository(ABC):
     @abstractmethod
     def loadSentenceTransformer(self):
         pass
+    @abstractmethod
+    def getEmbeddingList(self, sentenceTransformer, stringList):
+        pass
 
     @abstractmethod
-    def calculateCosineSimilarityWithSentenceTransformer(
-            self, sentenceTransformer, answerList, questionList):
+    def calculateCosineSimilarityWithSentenceTransformer(self, embeddingAnswerList, embeddingQuestionList):
         pass
 
     @abstractmethod

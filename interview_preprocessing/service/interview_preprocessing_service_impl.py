@@ -32,6 +32,9 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
         return cls.__instance
 
+    def saveFile(self, dataList, savePath):
+        self.__interviewPreprocessingFileRepository.saveFile(savePath, dataList)
+
     def saveConcatenatedRawJsonFile(self, readFilePath, saveFilePath):
 
         dataList = self.__interviewPreprocessingFileRepository.readFile(readFilePath)
@@ -68,28 +71,27 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
         return sampledAnswerList, sampledRealQuestionList, sampledQuestionList
 
-    def transformDataWithPOSTagging(self, answerList, questionList):
+    def transformDataWithPOSTagging(self, sentenceList):
         mecab = self.__interviewPreprocessingCorpusRepository.loadMecab()
-        taggedAnswerList = [self.__interviewPreprocessingCorpusRepository.posTagging(mecab, answer)
-                            for answer in answerList]
-        taggedQuestionList = [self.__interviewPreprocessingCorpusRepository.posTagging(mecab, question)
-                              for question in questionList]
+        taggedList = \
+            [self.__interviewPreprocessingCorpusRepository.posTagging(mecab, sentence) for sentence in sentenceList]
 
-        filteredAnswerList = [self.__interviewPreprocessingCorpusRepository.filterWord(taggedAnswer)
-                              for taggedAnswer in taggedAnswerList]
-        filteredQuestionList = [self.__interviewPreprocessingCorpusRepository.filterWord(taggedQuestion)
-                                for taggedQuestion in taggedQuestionList]
+        filteredList = \
+            [self.__interviewPreprocessingCorpusRepository.filterWord(taggedSentence) for taggedSentence in taggedList]
 
-        answerStringList = [' '.join(filteredAnswer) for filteredAnswer in filteredAnswerList]
-        questionStringList = [' '.join(filteredQuestion) for filteredQuestion in filteredQuestionList]
+        stringList = [' '.join(filteredWord) for filteredWord in filteredList]
 
-        return answerStringList, questionStringList
+        return stringList
 
-    def cosineSimilarityBySentenceTransformer(self, answerStringList, questionStringList):
+    def saveEmbeddedVector(self, stringList):
         sentenceTransformer = self.__interviewPreprocessingCorpusRepository.loadSentenceTransformer()
+        embeddedVector = self.__interviewPreprocessingCorpusRepository.getEmbeddingList(sentenceTransformer, stringList)
+        return embeddedVector
+
+    def cosineSimilarityBySentenceTransformer(self, embeddedAnswerStringList, embeddedQuestionStringList):
         cosineSimilarityList = (
             self.__interviewPreprocessingCorpusRepository.calculateCosineSimilarityWithSentenceTransformer(
-                sentenceTransformer, answerStringList, questionStringList
+                embeddedAnswerStringList, embeddedQuestionStringList
             ))
 
         return cosineSimilarityList
@@ -131,6 +133,8 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         labeledInterviewList = self.__interviewPreprocessingIntentRepository.intentLabelingByRuleBase(interviewList)
         countingData = self.__interviewPreprocessingIntentRepository.countLabeledInterview(labeledInterviewList)
         print('labeling result : ', countingData)
+        savePath = f'assets\\json_data_intent_labeled\\total_intent_labeled_{len(labeledInterviewList)}.json'
+        self.__interviewPreprocessingFileRepository.saveFile(savePath, labeledInterviewList)
         return labeledInterviewList
 
     def splitIntentLabeledData(self, labeledInterviewList, sampleSize):
@@ -205,6 +209,15 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         print('intent_comparison_ratios.csv 생성 완료')
 
         return comparisonResult
+
+    def separateFileByIntent(self, filePath):
+        interviewDataList = self.__interviewPreprocessingFileRepository.readFile(filePath)
+
+        extractedData = self.__interviewPreprocessingFileRepository.extractIntent(interviewDataList)
+
+        savePath = 'assets\\json_data_intent_separated\\'
+        self.__interviewPreprocessingFileRepository.separateFileByInfo(extractedData, savePath)
+
 
 
 

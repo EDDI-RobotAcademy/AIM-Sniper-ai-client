@@ -19,11 +19,15 @@ class InterviewPreprocessingService(ABC):
         pass
 
     @abstractmethod
-    def transformDataWithPOSTagging(self, answerList, questionList):
+    def transformDataWithPOSTagging(self, sentenceList):
         pass
 
     @abstractmethod
-    def cosineSimilarityBySentenceTransformer(self, answerStringList, questionStringList):
+    def saveEmbeddedVector(self, filePath):
+        pass
+
+    @abstractmethod
+    def cosineSimilarityBySentenceTransformer(self, embeddedAnswerStringList, embeddedQuestionStringList):
         pass
 
     @abstractmethod
