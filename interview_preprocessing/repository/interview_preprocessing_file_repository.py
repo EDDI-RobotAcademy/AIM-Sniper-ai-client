@@ -21,3 +21,7 @@ class InterviewPreprocessingFileRepository(ABC):
     @abstractmethod
     def samplingAnswerAndQuestionIndex(self, totalSize, n, m):
         pass
+
+    @abstractmethod
+    def extractIntent(self, interviewDataList):
+        pass

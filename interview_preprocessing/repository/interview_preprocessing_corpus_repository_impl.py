@@ -43,8 +43,8 @@ class InterviewPreprocessingCorpusRepositoryImpl(InterviewPreprocessingCorpusRep
         return posTagging
 
     def filterWord(self, posTagging):
-        targetTags = ['NNG']
-        # targetTags = ['NNG', 'NNP', 'VV', 'VA']
+        # targetTags = ['NNG']
+        targetTags = ['NNG', 'NNP', 'VV', 'VA']
 
         # 특정 태그에 포함된 단어들만 리스트에 저장
         filteredWords = [word for word, tag in posTagging if any(t in tag for t in targetTags)]
@@ -59,10 +59,12 @@ class InterviewPreprocessingCorpusRepositoryImpl(InterviewPreprocessingCorpusRep
 
         return sentenceTransformer
 
-    def calculateCosineSimilarityWithSentenceTransformer(self, sentenceTransformer, answerList, questionList):
-        embeddingAnswerList = sentenceTransformer.encode(answerList)
-        embeddingQuestionList = sentenceTransformer.encode(questionList)
+    def getEmbeddingList(self, sentenceTransformer, stringList):
+        embeddedList = sentenceTransformer.encode(stringList)
+        return embeddedList
 
+
+    def calculateCosineSimilarityWithSentenceTransformer(self, embeddingAnswerList, embeddingQuestionList):
         cosineSimilarityList = cosine_similarity(embeddingAnswerList, embeddingQuestionList)
 
         return cosineSimilarityList
