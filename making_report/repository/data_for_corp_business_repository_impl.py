@@ -5,7 +5,7 @@ from io import BytesIO
 
 import dart_fss as dart
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import openai
 import requests
@@ -28,13 +28,10 @@ if not openaiApiKey:
 
 class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
     __instance = None
-    WANTED_CORP_LIST = [
-        'SK네트웍스', 'SK이노베이션', 'SK텔레콤', 'SK하이닉스', '삼성전자', 'LG에너지솔루션', 'NAVER', '삼성바이오로직스',
-        '삼성SDI', 'LG화학', '기아', 'POSCO홀딩스', '대한항공', '삼성물산', '현대모비스', 'LG전자', '한국전력공사', '셀트리온',
-        'LG생활건강', 'HMM', '삼성생명', '하이브', '삼성전기', 'SK바이오사이언스', 'LG', 'S-Oil', '고려아연', '케이티앤지', '우리금융지주',
-        '삼성에스디에스', '엔씨소프트', '삼성화재해상보험', '아모레퍼시픽', '포스코퓨처엠']
+    WANTED_CORP_LIST = ["SK네트웍스", "삼성전자", "현대자동차", "SK하이닉스", "LG전자", "POSCO홀딩스", "NAVER", "현대모비스", "삼성SDI", "기아", "LG화학", "삼성물산", "롯데케미칼", "SK이노베이션", "S-Oil", "CJ제일제당", "현대건설", "삼성에스디에스", "LG디스플레이", "아모레퍼시픽", "한화솔루션", "HD현대중공업", "LS", "두산에너빌리티", "SK텔레콤", "케이티", "LG유플러스", "HJ중공업", "삼성전기", "한화에어로스페이스", "효성", "OCI", "코웨이", "한샘", "신세계", "이마트", "현대백화점", "LG생활건강", "GS리테일", "오뚜기", "농심", "롯데웰푸드", "CJ ENM", "한화", "두산밥캣", "LG이노텍", "엘에스일렉트릭", "삼성바이오로직스", "셀트리온"]
 
-    WANTED_SEARCH_YEAR = 20230101
+    SEARCH_YEAR_GAP = 1
+    WANTED_SEARCH_YEAR = f'{(datetime.today() - timedelta(days=365*SEARCH_YEAR_GAP)).year}0101'
     WANTED_SEARCH_DOC = 'A'
 
 
@@ -115,8 +112,9 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
                                 ).report_list
 
                 corpReceiptCode = next((report.rcept_no
-                                         for report in corpReportList
-                                         if '사업보고서' in report.report_nm), None)
+                                        for report in corpReportList
+                                        if ('사업보고서' in report.report_nm) and (r'[첨부정정]' not in report.report_nm))
+                                       , None)
 
                 corpReceiptCodeDict[corpName] = corpReceiptCode
 
@@ -163,7 +161,8 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
     def getRawDataFromDart(self):
         rawDataDict = {}
         rawCorpDataDict = {}
-        for corpName, receiptCode in tqdm(self.getCorpReceiptCode().items(), desc="get_raw_data"):
+        for corpName, receiptCode in self.getCorpReceiptCode().items():
+            print(f"* CB_RAW - {corpName}")
             response = self.apiResponseOfCorpDocument(receiptCode)
             zipFile, corpDocuList = self.getDataFromZipFile(response)
             xmlFile = zipFile.read(corpDocuList[0])
@@ -182,7 +181,8 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
     def preprocessRawData(self, rawData):
         preprocessDataDict = {}
 
-        for corpName, corpData in tqdm(rawData.items(), desc="preprocess_data"):
+        for corpName, corpData in rawData.items():
+            print(f"* CB_PREPRO - {corpName}")
             paragraphList = self.getAllDataFromXml(corpData, "P")
 
             result = [self.preprocessTaginParagraph(paragraph)
@@ -207,6 +207,7 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
 
         changedContextDict = {}
         for corpName, doc in preprocessedData.items():
+            print(f"* CB_AI - {corpName}")
             if len(doc) >= maxTokenLength:
                 print(f"사업내용 토큰 수 초과 -> {corpName}")
                 continue
