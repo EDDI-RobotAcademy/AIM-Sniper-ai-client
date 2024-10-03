@@ -2,6 +2,8 @@ import json
 import os
 import dart_fss as dart
 from datetime import datetime, timedelta
+import warnings
+warnings.filterwarnings('ignore')
 
 from dotenv import load_dotenv
 from tqdm import tqdm
@@ -16,7 +18,7 @@ if not dartApiKey:
 
 class DataForFinanceRepositoryImpl(DataForFinanceRepository):
     __instance = None
-    SEARCH_YEAR_GAP = 2
+    SEARCH_YEAR_GAP = 1
     SEARCH_START_YEAR = f'{(datetime.today() - timedelta(days=365*SEARCH_YEAR_GAP)).year}1231'
     SEARCH_END_YEAR = f'{datetime.today().year}1231'
 
@@ -67,7 +69,6 @@ class DataForFinanceRepositoryImpl(DataForFinanceRepository):
         return incomeDf
 
     def getFinancialStatements(self, corpCode):
-        print(os.getcwd())
         fs = dart.fs.extract(
             corp_code=corpCode, report_tp='annual',
             bgn_de=self.SEARCH_START_YEAR, end_de=self.SEARCH_END_YEAR,
@@ -102,14 +103,14 @@ class DataForFinanceRepositoryImpl(DataForFinanceRepository):
         name = self.checkLabelNameInFS(
             income, "매출액", "영업수익", "수익(매출액)", "Revenue", "Sales")
 
-        return income.loc[name].to_dict()
+        return income.loc[name].squeeze().to_dict()
 
     def getReceivableTurnover(self, income, balance):
         revenueName = self.checkLabelNameInFS(income, "매출액", "영업수익", "수익(매출액)", "Revenue", "Sales")
         receivableName = self.checkLabelNameInFS(balance, "매출채권", "trade receivables")
 
-        revenue = income.loc[revenueName]
-        tradeReceivables = balance.loc[receivableName]
+        revenue = income.loc[revenueName].squeeze()
+        tradeReceivables = balance.loc[receivableName].squeeze()
 
         revenue.index = revenue.index.map(lambda x: x[:4])
         tradeReceivables.index = tradeReceivables.index.map(lambda x: x[:4])
@@ -122,33 +123,32 @@ class DataForFinanceRepositoryImpl(DataForFinanceRepository):
     def getOperatingCashFlow(self, cashFlow):
         name = self.checkLabelComboNameInFS(cashFlow, "영업활동", "현금흐름")
 
-        return cashFlow.loc[name].to_dict()
+        return cashFlow.loc[name].squeeze().to_dict()
 
     def getProfitDataFromDart(self, corpCodeDict):
         profitDataDict = {}
 
         for corpName, corpCode in corpCodeDict.items():
+            print(f"* FS Extract - {corpName}")
             try:
                 balance, income, cashFlow = self.getFinancialStatements(corpCode)
-            except Exception as e:
-                print(f"[NOT_PASS '{corpName}({corpCode})-FSDocu'] => {e}")
-                pass
+                if all([(balance is None), (income is None), (cashFlow is None)]):
+                    print(f"[FS_Docu Not Exist] - '{corpName} ({corpCode})'")
 
-            try:
                 revenueTrend = self.getRevenueTrend(income)
                 receivableTurnover = self.getReceivableTurnover(income, balance)
                 operatingCashFlow = self.getOperatingCashFlow(cashFlow)
 
             except Exception as e:
                 print(f"[NOT_PASS '{corpName}({corpCode})-FSValue'] => {e}")
+                revenueTrend, receivableTurnover, operatingCashFlow = 0, 0, 0
                 pass
 
             profitDataDict[corpName] = {"revenueTrend": revenueTrend,
-                                       "receivableTurnover": receivableTurnover,
-                                       "operatingCashFlow":operatingCashFlow}
-
-            print(f"*** '{corpName}' finish - {profitDataDict}")
-
-        # self.saveData(profitDataDict, "../data/dart_financial_statements/preprocessed_data_v1")
+                                        "receivableTurnover": receivableTurnover,
+                                        "operatingCashFlow": operatingCashFlow}
+            temp = {"revenueTrend": revenueTrend, "receivableTurnover": receivableTurnover, "operatingCashFlow": operatingCashFlow}
+            print(f"---> {temp}")
+        self.saveData(profitDataDict, "../data/dart_financial_statements/preprocessed_data_v1")
 
         return profitDataDict
