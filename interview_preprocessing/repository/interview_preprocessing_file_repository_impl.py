@@ -50,7 +50,7 @@ class InterviewPreprocessingFileRepositoryImpl(InterviewPreprocessingFileReposit
             return data
 
 
-    def saveFile(self, filePath, data, silent):
+    def saveFile(self, filePath, data, silent=False):
         try:
             with open(filePath, 'w', encoding='utf-8') as file:
                 json.dump(data, file, ensure_ascii=False, indent=4)

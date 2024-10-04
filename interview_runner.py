@@ -104,10 +104,9 @@ def match_vecs():
     startAnswerList = interview.readFile(f'assets\\json_data_embedding\\{sequence[0]}_embedded.json')
 
     cnt = 0
-
+    used_question_vecs = []
     for startAnswer in tqdm(startAnswerList, total=len(startAnswerList), desc='match_vecs'):
         matched_data = []
-        used_question_vecs = set()
 
         currentAnswerVec = tuple(startAnswer.get('answer_vec'))
         matched_data.append({
@@ -125,31 +124,31 @@ def match_vecs():
             best_match = None
 
             for nextQuestion in nextQuestionList:
-                questionVec = tuple(nextQuestion.get('question_vec'))
+                if nextQuestion.get('question') not in used_question_vecs:
+                    questionVec = tuple(nextQuestion.get('question_vec'))
 
-                if nextQuestion.get('question') in used_question_vecs:
-                    continue
 
-                similarity = interview.cosineSimilarityBySentenceTransformer(
-                    np.array(currentAnswerVec).reshape(1, -1),
-                    np.array(questionVec).reshape(1, -1)
-                )
+                    similarity = interview.cosineSimilarityBySentenceTransformer(
+                        np.array(currentAnswerVec).reshape(1, -1),
+                        np.array(questionVec).reshape(1, -1)
+                    )
 
-                if similarity > highest_similarity:
-                    highest_similarity = similarity
-                    best_match = {
-                        "question": nextQuestion.get('question'),
-                        "answer": nextQuestion.get('answer'),
-                        "summary": nextQuestion.get('summary'),
-                        "occupation": nextQuestion.get('occupation'),
-                        "experience": nextQuestion.get('experience'),
-                        "intent": nextQuestion.get('rule_based_intent'),
-                        "similarity": highest_similarity.tolist()[0][0],
-                    }
-                    currentAnswerVec = nextQuestion.get('answer_vec')
+                    if similarity > highest_similarity:
+                        highest_similarity = similarity
+                        best_match = {
+                            "question": nextQuestion.get('question'),
+                            "answer": nextQuestion.get('answer'),
+                            "summary": nextQuestion.get('summary'),
+                            "occupation": nextQuestion.get('occupation'),
+                            "experience": nextQuestion.get('experience'),
+                            "intent": nextQuestion.get('rule_based_intent'),
+                            "similarity": highest_similarity.tolist()[0][0],
+                        }
+                        currentAnswerVec = nextQuestion.get('answer_vec')
             if best_match:
                 matched_data.append(best_match)
-                used_question_vecs.add(best_match["question"])
+                used_question_vecs.append(best_match["question"])
+                print('used list : ', used_question_vecs)
 
         cnt += 1
         os.makedirs('assets\\json_qa_pair', exist_ok=True)
@@ -168,12 +167,12 @@ if __name__ == '__main__':
     labelSeparatedFilePath = 'assets\\json_data_intent_separated\\'
 
     # concatenateRawData(rawFilePath, concatenatedFilePath)
-    # separateData(concatenatedFilePath, separatedFilePath))
-    # saveSampledLabeledInterview(separatedFilePath, labeledFilePath)
-    # separateFileByIntent(finalIntentPath)
-    # labelSeparatedFiles = glob.glob(os.path.join(labelSeparatedFilePath, '*.json'))
-    # for file in labelSeparatedFiles:
-    #     getKeyword(file)
+    separateData(concatenatedFilePath, separatedFilePath)
+    saveSampledLabeledInterview(separatedFilePath, labeledFilePath)
+    separateFileByIntent(finalIntentPath)
+    labelSeparatedFiles = glob.glob(os.path.join(labelSeparatedFilePath, '*.json'))
+    for file in labelSeparatedFiles:
+        getKeyword(file)
     match_vecs()
 
 
