@@ -100,7 +100,7 @@ def getKeyword(inputFilePath):
 
 
 def match_vecs():
-    sequence = ['협업_능력', '대처_능력', '적응력', '기술적_역량', '프로젝트_경험']
+    sequence = ['협업_능력', '대처_능력', '적응력', '기술적_역량', '프로젝트_경험', '자기_개발']
     startAnswerList = interview.readFile(f'assets\\json_data_embedding\\{sequence[0]}_embedded.json')
 
     cnt = 0
@@ -113,6 +113,7 @@ def match_vecs():
         matched_data.append({
             "question": startAnswer['question'],
             "answer": startAnswer["answer"],
+            "summary": startAnswer["summary"],
             "occupation": startAnswer['occupation'],
             "experience": startAnswer.get('experience', 'NEW'),
             "intent": startAnswer['rule_based_intent'],
@@ -137,20 +138,18 @@ def match_vecs():
                 if similarity > highest_similarity:
                     highest_similarity = similarity
                     best_match = {
-                        "question": nextQuestion['question'],
+                        "question": nextQuestion.get('question'),
                         "answer": nextQuestion.get('answer'),
+                        "summary": nextQuestion.get('summary'),
                         "occupation": nextQuestion.get('occupation'),
                         "experience": nextQuestion.get('experience'),
                         "intent": nextQuestion.get('rule_based_intent'),
-                        "similarity": highest_similarity.tolist(),
-                        "answer_vec": nextQuestion.get('answer_vec')
+                        "similarity": highest_similarity.tolist()[0][0],
                     }
-
+                    currentAnswerVec = nextQuestion.get('answer_vec')
             if best_match:
                 matched_data.append(best_match)
                 used_question_vecs.add(best_match["question"])
-                currentAnswerVec = tuple(best_match.get('answer_vec'))
-        print(matched_data)
 
         cnt += 1
         os.makedirs('assets\\json_qa_pair', exist_ok=True)
@@ -181,20 +180,3 @@ if __name__ == '__main__':
     # 안해도 되는 것들
     # getLLMIntent(labeledInputFile, labeledFilePath)
     # comparisonRatioResultToCsv(compareLabelFilePath, '산사태')
-
-
-
-
-# # 유사도 계산
-# answerList, realQuestionList, questionList = (
-#     interview.samplingData(separatedFilePath, nAnswer=50, mQuestion=10000))
-
-# answerStringList, questionStringList = (
-#     interview.transformDataWithPOSTagging(answerList, questionList))
-
-# sentenceTransformerCosineSimilarityList = (
-#     interviewPreprocessingService.cosineSimilarityBySentenceTransformer(answerStringList, questionStringList))
-#
-# saveFilePath = 'assets\\question_answer_similarity'
-# interviewPreprocessingService.saveSimilarityResult(sentenceTransformerCosineSimilarityList, answerList, realQuestionList, questionList,
-#                      saveFilePath)
