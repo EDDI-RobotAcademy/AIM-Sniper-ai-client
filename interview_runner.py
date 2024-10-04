@@ -1,44 +1,11 @@
 import glob
 import time
 import os
-import json
+import random
 import numpy as np
 from tqdm import tqdm
 
 from interview_preprocessing.service.interview_preprocessing_service_impl import InterviewPreprocessingServiceImpl
-def calculateCosineSimilarityByNltk(nAnswer, mQuestion, filePath, interviewList):
-    interviewPreprocessingService = InterviewPreprocessingServiceImpl.getInstance()
-    answerList, realQuestionList, questionList = (
-        interviewPreprocessingService.samplingData(interviewList, nAnswer, mQuestion, filePath))
-
-    answerStringList, questionStringList = (
-        interviewPreprocessingService.transformSampledData(answerList, questionList))
-
-    startTime = time.time()
-
-    nltkCosineSimilarityList = interviewPreprocessingService.cosineSimilarityByNltk(
-        answerStringList, questionStringList
-    )
-
-    endTime = time.time()
-    print(f"nltk 소요 시간: {endTime - startTime}")
-
-    outputFilename = 'output_nltk.txt'
-    with open(outputFilename, 'w', encoding='utf-8') as f:
-        for idx, cosineSimilarity in enumerate(nltkCosineSimilarityList):
-            topFiveIndex = sorted(range(len(cosineSimilarity)),
-                                  key=lambda i: cosineSimilarity[i], reverse=True)[:5]
-            topFiveValue = [cosineSimilarity[i] for i in topFiveIndex]
-
-            f.write(f"**실제 질문**: {realQuestionList[idx]}\n")
-            f.write(f"**답변**: {answerList[idx]}\n")
-            f.write("\n")
-
-            for i, index in enumerate(topFiveIndex):
-                f.write(f"**질문{i + 1}**: {questionList[index]}\n")
-                f.write(f"**유사도**: {topFiveValue[i]}\n")
-            f.write("-------------------------------------------------------------------\n")
-        print(f"{outputFilename} 생성")
 
 interview = InterviewPreprocessingServiceImpl()
 
@@ -104,7 +71,6 @@ def match_vecs():
     startAnswerList = interview.readFile(f'assets\\json_data_embedding\\{sequence[0]}_embedded.json')
 
     cnt = 0
-    used_question_vecs = []
     for startAnswer in tqdm(startAnswerList, total=len(startAnswerList), desc='match_vecs'):
         matched_data = []
 
@@ -120,35 +86,38 @@ def match_vecs():
 
         for i in range(1, len(sequence)):
             nextQuestionList = interview.readFile(f'assets\\json_data_embedding\\{sequence[i]}_embedded.json')
-            highest_similarity = -1
-            best_match = None
-
+            similarity_list = []
             for nextQuestion in nextQuestionList:
-                if nextQuestion.get('question') not in used_question_vecs:
-                    questionVec = tuple(nextQuestion.get('question_vec'))
+                questionVec = tuple(nextQuestion.get('question_vec'))
 
+                similarity = interview.cosineSimilarityBySentenceTransformer(
+                    np.array(currentAnswerVec).reshape(1, -1),
+                    np.array(questionVec).reshape(1, -1)
+                )
+                similarity_list.append({
+                    "question": nextQuestion.get('question'),
+                    "answer": nextQuestion.get('answer'),
+                    "summary": nextQuestion.get('summary'),
+                    "occupation": nextQuestion.get('occupation'),
+                    "experience": nextQuestion.get('experience'),
+                    "intent": nextQuestion.get('rule_based_intent'),
+                    "similarity": similarity.tolist()[0][0],
+                    "answer_vec": nextQuestion.get('answer_vec'),
+                })
 
-                    similarity = interview.cosineSimilarityBySentenceTransformer(
-                        np.array(currentAnswerVec).reshape(1, -1),
-                        np.array(questionVec).reshape(1, -1)
-                    )
+            # 유사도를 기준으로 내림차순 정렬
+            similarity_list.sort(key=lambda x: x["similarity"], reverse=True)
 
-                    if similarity > highest_similarity:
-                        highest_similarity = similarity
-                        best_match = {
-                            "question": nextQuestion.get('question'),
-                            "answer": nextQuestion.get('answer'),
-                            "summary": nextQuestion.get('summary'),
-                            "occupation": nextQuestion.get('occupation'),
-                            "experience": nextQuestion.get('experience'),
-                            "intent": nextQuestion.get('rule_based_intent'),
-                            "similarity": highest_similarity.tolist()[0][0],
-                        }
-                        currentAnswerVec = nextQuestion.get('answer_vec')
-            if best_match:
+            # 상위 10% 추출
+            top_10_percent_count = int(len(similarity_list) * 0.1)
+            top_10_percent_questions = similarity_list[:top_10_percent_count]
+
+            # 상위 10% 중에서 랜덤하게 하나 선택
+            if top_10_percent_questions:
+                best_match = random.choice(top_10_percent_questions)
+                currentAnswerVec = best_match.get("answer_vec")
+                best_match.pop("answer_vec", None)
                 matched_data.append(best_match)
-                used_question_vecs.append(best_match["question"])
-                print('used list : ', used_question_vecs)
 
         cnt += 1
         os.makedirs('assets\\json_qa_pair', exist_ok=True)
@@ -167,12 +136,12 @@ if __name__ == '__main__':
     labelSeparatedFilePath = 'assets\\json_data_intent_separated\\'
 
     # concatenateRawData(rawFilePath, concatenatedFilePath)
-    separateData(concatenatedFilePath, separatedFilePath)
-    saveSampledLabeledInterview(separatedFilePath, labeledFilePath)
-    separateFileByIntent(finalIntentPath)
-    labelSeparatedFiles = glob.glob(os.path.join(labelSeparatedFilePath, '*.json'))
-    for file in labelSeparatedFiles:
-        getKeyword(file)
+    # separateData(concatenatedFilePath, separatedFilePath)
+    # saveSampledLabeledInterview(separatedFilePath, labeledFilePath)
+    # separateFileByIntent(finalIntentPath)
+    # labelSeparatedFiles = glob.glob(os.path.join(labelSeparatedFilePath, '*.json'))
+    # for file in labelSeparatedFiles:
+    #     getKeyword(file)
     match_vecs()
 
 
