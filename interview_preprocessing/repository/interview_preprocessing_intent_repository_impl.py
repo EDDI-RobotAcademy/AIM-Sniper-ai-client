@@ -10,7 +10,7 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
     OVERCOME_KEYWORD = ['상사', '대처', '어떻게 해결', '예기치', '문제', '예상', '다르', '노하우', '극복', '동료',
                         '갈등', '타 부서와', '다른 부서와', '분쟁' '위기', '산사태', '코드 리뷰']
 
-    ADAPTABILITY_KEYWORD = ['변화', '새로운 환경', '적응', '부서에 배치', '다른 부서에']
+    ADAPTABILITY_KEYWORD = ['변화', '새로운 환경', '적응', '부서에 배치', '다른 부서에', '갑자기', '위기']
 
     COWORKING_KEYWORD = ['어떤 사람', '조직 내', '어떤 역할', '어떠한 역할', '포지션', '무슨 역할', '다를 경우', '사교성', '협업', '동아리']
 
