@@ -25,3 +25,19 @@ class InterviewPreprocessingFileRepository(ABC):
     @abstractmethod
     def extractIntent(self, interviewDataList):
         pass
+
+    @abstractmethod
+    def splitSentenceToWord(self, interviewList):
+        pass
+
+    @abstractmethod
+    def countWord(self, questionWordList, answerWordList):
+        pass
+
+    @abstractmethod
+    def loadStopWordList(self):
+        pass
+
+    @abstractmethod
+    def filterInterviewData(self, interviewList, stopWordList):
+        pass

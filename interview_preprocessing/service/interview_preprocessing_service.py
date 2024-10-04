@@ -73,3 +73,10 @@ class InterviewPreprocessingService(ABC):
     def comparisonResultToCsv(self, interviewList):
         pass
 
+    @abstractmethod
+    def countWordAndSave(self, interviewList):
+        pass
+
+    @abstractmethod
+    def filterInterviewDataAndSave(self, interviewList):
+        pass
