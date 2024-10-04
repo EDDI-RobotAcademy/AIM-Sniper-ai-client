@@ -1,8 +1,9 @@
 import glob
-import time
+import json
 import os
 import random
 import numpy as np
+
 from tqdm import tqdm
 
 from interview_preprocessing.service.interview_preprocessing_service_impl import InterviewPreprocessingServiceImpl
@@ -123,28 +124,38 @@ def match_vecs():
         os.makedirs('assets\\json_qa_pair', exist_ok=True)
         interview.saveFile(matched_data, f'assets\\json_qa_pair\\result_{cnt}.json', silent=True)
 
-if __name__ == '__main__':
-    rawFilePath = 'assets\\json_data_raw\\'
-    concatenatedFilePath = 'assets\\json_data_concatenated\\'
-    separatedFilePath = 'assets\\json_data_separated\\'
-    labeledFilePath = 'assets\\json_data_intent_labeled\\'
+def filterInterviewData(filePath):
+    interviewList = interview.readFile(filePath)
+    interview.countWordAndSave(interviewList)
+    interview.filterInterviewDataAndSave(interviewList)
 
-    labeledInputFile = os.path.join(labeledFilePath, 'sample_intent_labeled_1091_qualitative_eval.json')
-    compareLabelFilePath = os.path.join(labeledFilePath, 'sample_intent_labeled_1091_llm.json')
+if __name__ == '__main__':
+    # rawFilePath = 'assets\\json_data_raw\\'
+    # concatenatedFilePath = 'assets\\json_data_concatenated\\'
+    # concatenateRawData(rawFilePath, concatenatedFilePath)
+    #
+    separatedFilePath = 'assets\\json_data_separated\\'
+    # separateData(concatenatedFilePath, separatedFilePath)
+
+    filterInterviewData(separatedFilePath)
+    filteredFilePath = 'assets\\json_data_filtered\\'
+
+    labeledFilePath = 'assets\\json_data_intent_labeled\\'
+    saveSampledLabeledInterview(filteredFilePath, labeledFilePath)
+
     finalIntentPath = os.path.join(labeledFilePath, 'sample_intent_labeled_1200.json')
+    separateFileByIntent(finalIntentPath)
 
     labelSeparatedFilePath = 'assets\\json_data_intent_separated\\'
-
-    # concatenateRawData(rawFilePath, concatenatedFilePath)
-    # separateData(concatenatedFilePath, separatedFilePath)
-    # saveSampledLabeledInterview(separatedFilePath, labeledFilePath)
-    # separateFileByIntent(finalIntentPath)
-    # labelSeparatedFiles = glob.glob(os.path.join(labelSeparatedFilePath, '*.json'))
-    # for file in labelSeparatedFiles:
-    #     getKeyword(file)
+    labelSeparatedFiles = glob.glob(os.path.join(labelSeparatedFilePath, '*.json'))
+    for file in labelSeparatedFiles:
+        getKeyword(file)
     match_vecs()
 
 
     # 안해도 되는 것들
+    # labeledInputFile = os.path.join(labeledFilePath, 'sample_intent_labeled_1091_qualitative_eval.json')
     # getLLMIntent(labeledInputFile, labeledFilePath)
+    # compareLabelFilePath = os.path.join(labeledFilePath, 'sample_intent_labeled_1091_llm.json')
     # comparisonRatioResultToCsv(compareLabelFilePath, '산사태')
+

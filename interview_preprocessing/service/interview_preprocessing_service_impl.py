@@ -1,4 +1,6 @@
+import csv
 import itertools
+import json
 import os
 
 import pandas as pd
@@ -222,8 +224,42 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         savePath = 'assets\\json_data_intent_separated\\'
         self.__interviewPreprocessingFileRepository.separateFileByInfo(extractedData, savePath)
 
+    def countWordAndSave(self, interviewList):
+        questionWordList, answerWordList = (
+            self.__interviewPreprocessingFileRepository.splitSentenceToWord(interviewList))
 
+        sortedQuestion, sortedAnswer = (
+            self.__interviewPreprocessingFileRepository.countWord(questionWordList, answerWordList))
 
+        if not os.path.exists('assets\\csv_data'):
+            os.mkdir('assets\\csv_data')
+
+        with open('assets\\csv_data\\question_word_frequencies.csv', mode='w', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            writer.writerow(["단어", "빈도"])  # 헤더 작성
+            for word, count in sortedQuestion:
+                writer.writerow([word, count])
+
+        print("File saved at assets\\csv_data\\question_word_frequencies.csv")
+
+        with open('assets\\csv_data\\answer_word_frequencies.csv', mode='w', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            writer.writerow(["단어", "빈도"])  # 헤더 작성
+            for word, count in sortedAnswer:
+                writer.writerow([word, count])
+
+        print("File saved at assets\\csv_data\\answer_word_frequencies.csv")
+
+    def filterInterviewDataAndSave(self, interviewList):
+        stopWordList = self.__interviewPreprocessingFileRepository.loadStopWordList()
+        filteredInterviewList = (
+            self.__interviewPreprocessingFileRepository.filterInterviewData(interviewList, stopWordList))
+
+        if not os.path.exists('assets\\json_data_filtered'):
+            os.mkdir('assets\\json_data_filtered')
+
+        filePath = 'assets\\json_data_filtered\\filtered_interview_data.json'
+        self.__interviewPreprocessingFileRepository.saveFile(filePath, filteredInterviewList)
 
 
 

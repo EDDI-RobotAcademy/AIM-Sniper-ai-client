@@ -2,6 +2,8 @@ import glob
 import json
 import os
 import re
+from collections import Counter
+
 import numpy as np
 from tqdm import tqdm
 
@@ -127,3 +129,58 @@ class InterviewPreprocessingFileRepositoryImpl(InterviewPreprocessingFileReposit
                 'rule_based_intent': data.get('rule_based_intent')
             })
         return extractedData
+
+    def splitSentenceToWord(self, interviewList):
+        questionWordList = []
+        answerWordList = []
+        for interview in interviewList:
+            for data in interview:
+                question = data.get('question')
+                answer = data.get('answer')
+
+                questionWordList.extend(question.split())
+                answerWordList.extend(answer.split())
+
+        return questionWordList, answerWordList
+
+    def countWord(self, questionWordList, answerWordList):
+        questionWordCount = Counter(questionWordList)
+        answerWordCount = Counter(answerWordList)
+
+        sortedQuestion = sorted(questionWordCount.items(), key=lambda x: (len(x[0]), -x[1]))
+        sortedAnswer = sorted(answerWordCount.items(), key=lambda x: (len(x[0]), -x[1]))
+
+        return sortedQuestion, sortedAnswer
+
+    def loadStopWordList(self):
+        with open('assets\\stop_words.txt', 'r', encoding='utf-8') as file:
+            stopWordList = file.read().splitlines()
+
+        return stopWordList
+
+    def filterInterviewData(self, interviewList, stopWordList):
+        filteredInterviewList = []
+        for interview in interviewList:
+            for data in interview:
+                question = data.get('question')
+                answer = data.get('answer')
+                summary = data.get('summary')
+
+                filteredQuestionWord = [word for word in question.split() if word not in stopWordList]
+                filteredAnswerWord = [word for word in answer.split() if word not in stopWordList]
+                filteredSummaryWord = [word for word in summary.split() if word not in stopWordList]
+
+                filteredQuestion = ' '.join(filteredQuestionWord)
+                filteredAnswer = ' '.join(filteredAnswerWord)
+                filteredSummary = ' '.join(filteredSummaryWord)
+
+                filteredData = {
+                    'question': filteredQuestion,
+                    'answer': filteredAnswer,
+                    'summary': filteredSummary,
+                    'occupation': data.get('occupation'),
+                    'experience': data.get('experience'),
+                }
+                filteredInterviewList.append(filteredData)
+
+        return filteredInterviewList
