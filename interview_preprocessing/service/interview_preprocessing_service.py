@@ -2,6 +2,11 @@ from abc import ABC, abstractmethod
 
 
 class InterviewPreprocessingService(ABC):
+
+    @abstractmethod
+    def saveFile(self, dataList, savePath, silent):
+        pass
+
     @abstractmethod
     def saveConcatenatedRawJsonFile(self, readFilePath, saveFilePath):
         pass

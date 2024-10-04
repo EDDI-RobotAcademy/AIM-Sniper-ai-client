@@ -50,11 +50,12 @@ class InterviewPreprocessingFileRepositoryImpl(InterviewPreprocessingFileReposit
             return data
 
 
-    def saveFile(self, filePath, data):
+    def saveFile(self, filePath, data, silent):
         try:
             with open(filePath, 'w', encoding='utf-8') as file:
                 json.dump(data, file, ensure_ascii=False, indent=4)
-            print(f'File saved at "{filePath}".')
+            if silent == False:
+                print(f'File saved at "{filePath}".')
 
         except PermissionError as e:
             print(f"PermissionError: {e}")

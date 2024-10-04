@@ -7,7 +7,7 @@ class InterviewPreprocessingFileRepository(ABC):
         pass
 
     @abstractmethod
-    def saveFile(self, filePath, data):
+    def saveFile(self, filePath, data, silent):
         pass
 
     @abstractmethod
