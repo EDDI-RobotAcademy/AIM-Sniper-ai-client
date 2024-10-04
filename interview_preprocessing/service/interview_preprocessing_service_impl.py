@@ -186,13 +186,17 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         ruleVsQualitativeRatios = (self.__interviewPreprocessingIntentRepository.
                                       calculateDifferentIntentRatios(interviewList, 'rule_based_intent',
                                                                        'qualitative_eval_intent'))
+        try:
 
-        ruleVsLlmRatios = (self.__interviewPreprocessingIntentRepository.
-                              calculateDifferentIntentRatios(interviewList, 'rule_based_intent', 'llm_intent'))
+            ruleVsLlmRatios = (self.__interviewPreprocessingIntentRepository.
+                                  calculateDifferentIntentRatios(interviewList, 'rule_based_intent', 'llm_intent'))
 
-        qualitativeVsLlmRatios = (self.__interviewPreprocessingIntentRepository.
-                                     calculateDifferentIntentRatios(interviewList, 'qualitative_eval_intent',
-                                                                      'llm_intent'))
+            qualitativeVsLlmRatios = (self.__interviewPreprocessingIntentRepository.
+                                         calculateDifferentIntentRatios(interviewList, 'qualitative_eval_intent',
+                                                                          'llm_intent'))
+        except Exception as e:
+            ruleVsLlmRatios = '없음'
+            qualitativeVsLlmRatios = '없음'
 
         comparisonResult = pd.DataFrame({
             'rule_vs_qualitative(%)': ruleVsQualitativeRatios,
