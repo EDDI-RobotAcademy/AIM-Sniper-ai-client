@@ -153,7 +153,7 @@ def match_vecs():
 
         cnt += 1
         os.makedirs('assets\\json_qa_pair', exist_ok=True)
-        interview.saveFile(matched_data, f'assets\\json_qa_pair\\result_{cnt}.json')
+        interview.saveFile(matched_data, f'assets\\json_qa_pair\\result_{cnt}.json', silent=True)
 
 if __name__ == '__main__':
     rawFilePath = 'assets\\json_data_raw\\'

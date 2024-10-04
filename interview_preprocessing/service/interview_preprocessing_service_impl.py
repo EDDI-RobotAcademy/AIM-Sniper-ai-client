@@ -32,8 +32,8 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
         return cls.__instance
 
-    def saveFile(self, dataList, savePath):
-        self.__interviewPreprocessingFileRepository.saveFile(savePath, dataList)
+    def saveFile(self, dataList, savePath, silent=False):
+        self.__interviewPreprocessingFileRepository.saveFile(savePath, dataList, silent)
 
     def saveConcatenatedRawJsonFile(self, readFilePath, saveFilePath):
 
