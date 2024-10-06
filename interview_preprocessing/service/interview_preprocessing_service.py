@@ -32,7 +32,11 @@ class InterviewPreprocessingService(ABC):
         pass
 
     @abstractmethod
-    def cosineSimilarityBySentenceTransformer(self, embeddedAnswerStringList, embeddedQuestionStringList):
+    def loadSentenceTransformer(self):
+        pass
+
+    @abstractmethod
+    def cosineSimilarityBySentenceTransformer(self, sentenceTransfomrer, answerList, questionList):
         pass
 
     @abstractmethod

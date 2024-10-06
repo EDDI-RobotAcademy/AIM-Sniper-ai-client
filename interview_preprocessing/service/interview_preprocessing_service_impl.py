@@ -90,10 +90,16 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         embeddedVector = self.__interviewPreprocessingCorpusRepository.getEmbeddingList(sentenceTransformer, stringList)
         return embeddedVector
 
-    def cosineSimilarityBySentenceTransformer(self, embeddedAnswerStringList, embeddedQuestionStringList):
+    def loadSentenceTransformer(self):
+        return self.__interviewPreprocessingCorpusRepository.loadSentenceTransformer()
+
+    def cosineSimilarityBySentenceTransformer(self, sentenceTransformer, answerList, questionList):
+        embeddedAnswerList = sentenceTransformer.encode(answerList)
+        embeddedQuestionList = sentenceTransformer.encode(questionList)
+
         cosineSimilarityList = (
-            self.__interviewPreprocessingCorpusRepository.calculateCosineSimilarityWithSentenceTransformer(
-                embeddedAnswerStringList, embeddedQuestionStringList
+            self.__interviewPreprocessingCorpusRepository.calculateCosineSimilarity(
+                embeddedAnswerList, embeddedQuestionList
             ))
 
         return cosineSimilarityList
@@ -137,7 +143,23 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         print('labeling result : ', countingData)
         savePath = f'assets\\json_data_intent_labeled\\total_intent_labeled_{len(labeledInterviewList)}.json'
         self.__interviewPreprocessingFileRepository.saveFile(savePath, labeledInterviewList)
+
+        labeledInterviewListNotNull = []
+        for interview in labeledInterviewList:
+            intent = interview.get('rule_based_intent')
+            if intent is not None:
+                labeledInterviewListNotNull.append(interview)
+
+        savePath = f'assets\\json_data_intent_labeled\\intent_labeled_not_none_{len(labeledInterviewListNotNull)}.json'
+        self.__interviewPreprocessingFileRepository.saveFile(savePath, labeledInterviewListNotNull)
+
         return labeledInterviewList
+
+    def labeledInterviewNotNull(self, interviewList):
+        labeledInterviewList = self.__interviewPreprocessingIntentRepository.intentLabelingByRuleBase(interviewList)
+        countingData = self.__interviewPreprocessingIntentRepository.countLabeledInterview(labeledInterviewList)
+        print('labeling result : ', countingData)
+        savePath = f'assets\\json_data_intent_labeled\\total_intent_labeled_{len(labeledInterviewList)}.json'
 
     def splitIntentLabeledData(self, labeledInterviewList, sampleSize):
         interviewListIntentIsNone, interviewListIntentIsNotNone = (

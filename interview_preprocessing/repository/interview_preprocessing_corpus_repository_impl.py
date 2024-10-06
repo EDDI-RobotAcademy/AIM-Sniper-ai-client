@@ -64,8 +64,8 @@ class InterviewPreprocessingCorpusRepositoryImpl(InterviewPreprocessingCorpusRep
         return embeddedList
 
 
-    def calculateCosineSimilarityWithSentenceTransformer(self, embeddingAnswerList, embeddingQuestionList):
-        cosineSimilarityList = cosine_similarity(embeddingAnswerList, embeddingQuestionList)
+    def calculateCosineSimilarity(self, embeddedAnswerList, embeddedQuestionList):
+        cosineSimilarityList = cosine_similarity(embeddedAnswerList, embeddedQuestionList)
 
         return cosineSimilarityList
 

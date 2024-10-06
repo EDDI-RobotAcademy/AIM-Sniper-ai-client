@@ -23,7 +23,7 @@ class InterviewPreprocessingCorpusRepository(ABC):
         pass
 
     @abstractmethod
-    def calculateCosineSimilarityWithSentenceTransformer(self, embeddingAnswerList, embeddingQuestionList):
+    def calculateCosineSimilarity(self, embeddedAnswerList, embeddedQuestionList):
         pass
 
     @abstractmethod
