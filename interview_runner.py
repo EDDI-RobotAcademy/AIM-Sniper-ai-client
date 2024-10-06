@@ -5,6 +5,7 @@ import random
 import numpy as np
 
 from tqdm import tqdm
+from datetime import datetime
 
 from interview_preprocessing.service.interview_preprocessing_service_impl import InterviewPreprocessingServiceImpl
 
@@ -42,87 +43,50 @@ def comparisonRatioResultToCsv(filePath, keywordForRemove=None):
 def separateFileByIntent(filePath):
     interview.separateFileByIntent(filePath)
 
-def getKeyword(inputFilePath):
-    interviewList = interview.readFile(inputFilePath)
-    answerList, questionList = [], []
-    for data in interviewList:
-        answer = data.get('summary')
-        question = data.get('question')
-        answerList.append(answer)
-        questionList.append(question)
+def compareCosineSimilarity(filePath):
+    sentenceTransformer = interview.loadSentenceTransformer()
+    startIntent = '협업 능력'
+    nextIntentList = ['대처 능력', '적응력', '기술적 역량', '프로젝트 경험', '자기 개발']
+    labeledInterviewList = interview.readFile(filePath)
 
-    answerStringList = interview.transformDataWithPOSTagging(answerList)
-    questionStringList = interview.transformDataWithPOSTagging(questionList)
+    startInterviewList = [data for data in labeledInterviewList
+                                  if data.get('rule_based_intent') == startIntent]
 
-    answerVec = interview.saveEmbeddedVector(answerStringList)
-    questionVec = interview.saveEmbeddedVector(questionStringList)
+    for i, data in enumerate(tqdm(startInterviewList, total=len(startInterviewList), desc='compareCosineSimilarity')):
+        currentInterview = data
+        sessionData = []
+        sessionData.append(currentInterview)
 
-    for i in range(len(interviewList)):
-        interviewList[i]['question_vec'] = questionVec[i].tolist()
-        interviewList[i]['answer_vec'] = answerVec[i].tolist()
+        for idx, nextIntent in enumerate(nextIntentList):
+            nextIntentInterviewList = [data for data in labeledInterviewList
+                                       if data.get('rule_based_intent') == nextIntent]
 
-    savePath = 'assets\\json_data_embedding\\'
-    os.makedirs(savePath, exist_ok=True)
-    savePath = os.path.join(savePath, f'{inputFilePath.split('\\')[-1][:-5]}_embedded.json')
-    interview.saveFile(interviewList, savePath)
+            nextQuestionList = [data.get('question') for data in nextIntentInterviewList]
 
+            transformedAnswer = interview.transformDataWithPOSTagging(currentInterview.get('answer'))
+            transformedQuestionList = interview.transformDataWithPOSTagging(nextQuestionList)
 
-def match_vecs():
-    sequence = ['협업_능력', '대처_능력', '적응력', '기술적_역량', '프로젝트_경험', '자기_개발']
-    startAnswerList = interview.readFile(f'assets\\json_data_embedding\\{sequence[0]}_embedded.json')
+            similarityList = interview.cosineSimilarityBySentenceTransformer(
+                sentenceTransformer,
+                np.array(transformedAnswer).reshape(1, -1),
+                transformedQuestionList
+            )
 
-    cnt = 0
-    for startAnswer in tqdm(startAnswerList, total=len(startAnswerList), desc='match_vecs'):
-        matched_data = []
+            sortedSimilarityList = sorted(enumerate(similarityList[0]), key=lambda x: x[1], reverse=True)
 
-        currentAnswerVec = tuple(startAnswer.get('answer_vec'))
-        matched_data.append({
-            "question": startAnswer['question'],
-            "answer": startAnswer["answer"],
-            "summary": startAnswer["summary"],
-            "occupation": startAnswer['occupation'],
-            "experience": startAnswer.get('experience', 'NEW'),
-            "intent": startAnswer['rule_based_intent'],
-        })
+            top10PercentCount = int(len(sortedSimilarityList) * 0.1)
 
-        for i in range(1, len(sequence)):
-            nextQuestionList = interview.readFile(f'assets\\json_data_embedding\\{sequence[i]}_embedded.json')
-            similarity_list = []
-            for nextQuestion in nextQuestionList:
-                questionVec = tuple(nextQuestion.get('question_vec'))
+            top10percentSimilarity = sortedSimilarityList[:top10PercentCount]
 
-                similarity = interview.cosineSimilarityBySentenceTransformer(
-                    np.array(currentAnswerVec).reshape(1, -1),
-                    np.array(questionVec).reshape(1, -1)
-                )
-                similarity_list.append({
-                    "question": nextQuestion.get('question'),
-                    "answer": nextQuestion.get('answer'),
-                    "summary": nextQuestion.get('summary'),
-                    "occupation": nextQuestion.get('occupation'),
-                    "experience": nextQuestion.get('experience'),
-                    "intent": nextQuestion.get('rule_based_intent'),
-                    "similarity": similarity.tolist()[0][0],
-                    "answer_vec": nextQuestion.get('answer_vec'),
-                })
+            selectedIdx, similarity = random.choice(top10percentSimilarity)
+            nextInterview = nextIntentInterviewList[selectedIdx]
+            nextInterview['similarity'] = float(similarity)
+            sessionData.append(nextInterview)
+            currentInterview = nextInterview
 
-            # 유사도를 기준으로 내림차순 정렬
-            similarity_list.sort(key=lambda x: x["similarity"], reverse=True)
-
-            # 상위 10% 추출
-            top_10_percent_count = int(len(similarity_list) * 0.1)
-            top_10_percent_questions = similarity_list[:top_10_percent_count]
-
-            # 상위 10% 중에서 랜덤하게 하나 선택
-            if top_10_percent_questions:
-                best_match = random.choice(top_10_percent_questions)
-                currentAnswerVec = best_match.get("answer_vec")
-                best_match.pop("answer_vec", None)
-                matched_data.append(best_match)
-
-        cnt += 1
-        os.makedirs('assets\\json_qa_pair', exist_ok=True)
-        interview.saveFile(matched_data, f'assets\\json_qa_pair\\result_{cnt}.json', silent=True)
+        currentTime = datetime.now().strftime("%m%d%H%M%S%f")
+        os.makedirs('assets\\json_data_session', exist_ok=True)
+        interview.saveFile(sessionData, f'assets\\json_data_session\\result_{currentTime}.json', silent=True)
 
 def filterInterviewData(filePath):
     interviewList = interview.readFile(filePath)
@@ -134,23 +98,21 @@ if __name__ == '__main__':
     # concatenatedFilePath = 'assets\\json_data_concatenated\\'
     # concatenateRawData(rawFilePath, concatenatedFilePath)
     #
-    separatedFilePath = 'assets\\json_data_separated\\'
+    # separatedFilePath = 'assets\\json_data_separated\\'
     # separateData(concatenatedFilePath, separatedFilePath)
 
-    filterInterviewData(separatedFilePath)
+    # filterInterviewData(separatedFilePath)
     filteredFilePath = 'assets\\json_data_filtered\\'
 
     labeledFilePath = 'assets\\json_data_intent_labeled\\'
-    saveSampledLabeledInterview(filteredFilePath, labeledFilePath)
+    # saveSampledLabeledInterview(filteredFilePath, labeledFilePath)
 
-    finalIntentPath = os.path.join(labeledFilePath, 'sample_intent_labeled_1200.json')
-    separateFileByIntent(finalIntentPath)
-
-    labelSeparatedFilePath = 'assets\\json_data_intent_separated\\'
-    labelSeparatedFiles = glob.glob(os.path.join(labelSeparatedFilePath, '*.json'))
-    for file in labelSeparatedFiles:
-        getKeyword(file)
-    match_vecs()
+    # 전체 데이터로 세션 만들기
+    # finalIntentPath = os.path.join(labeledFilePath, 'intent_labeled_not_none_21463.json')
+    # separateFileByIntent(finalIntentPath)
+    # labelSeparatedFilePath = 'assets\\json_data_intent_separated\\'
+    # labelSeparatedFiles = glob.glob(os.path.join(labelSeparatedFilePath, '*.json'))
+    compareCosineSimilarity('assets\\json_data_intent_labeled\\intent_labeled_not_none_21463.json')
 
 
     # 안해도 되는 것들
