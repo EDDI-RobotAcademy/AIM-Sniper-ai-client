@@ -2,6 +2,7 @@ import glob
 import json
 import os
 import random
+
 import numpy as np
 
 from tqdm import tqdm
@@ -50,7 +51,7 @@ def compareCosineSimilarity(filePath):
     labeledInterviewList = interview.readFile(filePath)
 
     startInterviewList = [data for data in labeledInterviewList
-                                  if data.get('rule_based_intent') == startIntent]
+                          if data.get('rule_based_intent') == startIntent]
 
     for i, data in enumerate(tqdm(startInterviewList, total=len(startInterviewList), desc='compareCosineSimilarity')):
         currentInterview = data
@@ -60,7 +61,6 @@ def compareCosineSimilarity(filePath):
         for idx, nextIntent in enumerate(nextIntentList):
             nextIntentInterviewList = [data for data in labeledInterviewList
                                        if data.get('rule_based_intent') == nextIntent]
-
             nextQuestionList = [data.get('question') for data in nextIntentInterviewList]
 
             transformedAnswer = interview.transformDataWithPOSTagging(currentInterview.get('answer'))
@@ -88,6 +88,71 @@ def compareCosineSimilarity(filePath):
         os.makedirs('assets\\json_data_session', exist_ok=True)
         interview.saveFile(sessionData, f'assets\\json_data_session\\result_{currentTime}.json', silent=True)
 
+def createSessionData(filePath, iteration):
+    sentenceTransformer = interview.loadSentenceTransformer()
+    labeledInterviewList = interview.readFile(filePath)
+
+    intentList = ['협업 능력', '대처 능력', '적응력', '기술적 역량', '프로젝트 경험', '자기 개발']
+
+    allSortedSimilarityList = []
+    for idx, intent in enumerate(tqdm(intentList, total=len(intentList) - 1, desc='similarity')):
+        if idx == len(intentList) - 1:
+            break
+
+        currentIntentInterviewList = [data for data in labeledInterviewList
+                                if data.get('rule_based_intent') == intent]
+        nextIntentInterviewList = [data for data in labeledInterviewList
+                                   if data.get('rule_based_intent') == intentList[idx + 1]]
+
+        currentAnswerList = [data.get('answer') for data in currentIntentInterviewList]
+        nextQuestionList = [data.get('question') for data in nextIntentInterviewList]
+
+        transformedAnswerList = interview.transformDataWithPOSTagging(currentAnswerList)
+        transformedQuestionList = interview.transformDataWithPOSTagging(nextQuestionList)
+
+        similarityList = interview.cosineSimilarityBySentenceTransformer(
+            sentenceTransformer,
+            transformedAnswerList,
+            transformedQuestionList
+        )
+
+        sortedSimilarityList = []
+        for similarity in similarityList:
+            sortedSimilarity = sorted(enumerate(similarity), key=lambda x: x[1], reverse=True)
+            top5PercentCount = int(len(sortedSimilarity) * 0.05)
+            top5percentSimilarity = sortedSimilarity[:top5PercentCount]
+            sortedSimilarityList.append(top5percentSimilarity)
+
+        allSortedSimilarityList.append(sortedSimilarityList)
+
+    startIntent = '협업 능력'
+    nextIntentList = ['대처 능력', '적응력', '기술적 역량', '프로젝트 경험', '자기 개발']
+
+    startInterviewList = [data for data in labeledInterviewList
+                          if data.get('rule_based_intent') == startIntent]
+
+    for i in range(iteration):
+        for j, startInterview in enumerate(tqdm(startInterviewList[:5], total=5, desc='session')):
+            sessionData = []
+            sessionData.append(startInterview)
+            selectedIdx, similarity = random.choice(allSortedSimilarityList[0][j])
+            nextIntentInterviewList = [data for data in labeledInterviewList
+                                       if data.get('rule_based_intent') == nextIntentList[0]]
+            nextIntentInterview = nextIntentInterviewList[selectedIdx]
+            nextIntentInterview['similarity'] = float(similarity)
+            sessionData.append(nextIntentInterview)
+            for idx, intent in enumerate(nextIntentList[1:]):
+                selectedIdx, similarity = random.choice(allSortedSimilarityList[idx+1][selectedIdx])
+                nextIntentInterviewList = [data for data in labeledInterviewList
+                                           if data.get('rule_based_intent') == intent]
+                nextIntentInterview = nextIntentInterviewList[selectedIdx]
+                nextIntentInterview['similarity'] = float(similarity)
+                sessionData.append(nextIntentInterview)
+
+            savePath = f'assets\\json_data_session\\data_set_{i+1}'
+            os.makedirs(savePath, exist_ok=True)
+            interview.saveFile(sessionData, os.path.join(savePath, f'session_{j+1}.json'), silent=True)
+
 def filterInterviewData(filePath):
     interviewList = interview.readFile(filePath)
     interview.countWordAndSave(interviewList)
@@ -112,8 +177,8 @@ if __name__ == '__main__':
     # separateFileByIntent(finalIntentPath)
     # labelSeparatedFilePath = 'assets\\json_data_intent_separated\\'
     # labelSeparatedFiles = glob.glob(os.path.join(labelSeparatedFilePath, '*.json'))
-    compareCosineSimilarity('assets\\json_data_intent_labeled\\intent_labeled_not_none_21463.json')
-
+    # compareCosineSimilarity('assets\\json_data_intent_labeled\\intent_labeled_not_none_21463.json')
+    createSessionData('assets\\json_data_intent_labeled\\intent_labeled_not_none_21463.json', 2)
 
     # 안해도 되는 것들
     # labeledInputFile = os.path.join(labeledFilePath, 'sample_intent_labeled_1091_qualitative_eval.json')
