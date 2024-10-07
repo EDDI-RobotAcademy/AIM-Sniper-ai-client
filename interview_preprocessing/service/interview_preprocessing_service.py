@@ -16,14 +16,6 @@ class InterviewPreprocessingService(ABC):
         pass
 
     @abstractmethod
-    def flattenFileToList(self, filePath):
-        pass
-
-    @abstractmethod
-    def samplingData(self, interviewList, nAnswer, mQuestion):
-        pass
-
-    @abstractmethod
     def transformDataWithPOSTagging(self, sentenceList):
         pass
 
@@ -36,7 +28,7 @@ class InterviewPreprocessingService(ABC):
         pass
 
     @abstractmethod
-    def cosineSimilarityBySentenceTransformer(self, sentenceTransfomrer, answerList, questionList):
+    def cosineSimilarityBySentenceTransformer(self, sentenceTransformer, answerList, questionList):
         pass
 
     @abstractmethod
@@ -44,16 +36,7 @@ class InterviewPreprocessingService(ABC):
         pass
 
     @abstractmethod
-    def countWantToData(self, keyword, interviewDataPath):
-        pass
-
-    @abstractmethod
-    def saveSimilarityResult(self, sentenceTransformerCosineSimilarityList, answerList, realQuestionList, questionList,
-                             saveFilePath):
-        pass
-
-    @abstractmethod
-    def intentLabeling(self, interviewList):
+    def intentLabeling(self, interviewList, saveFilePath):
         pass
 
     @abstractmethod
@@ -66,7 +49,7 @@ class InterviewPreprocessingService(ABC):
         pass
 
     @abstractmethod
-    def readFile(self, filePath, keyword):
+    def readFile(self, filePath):
         pass
 
     @abstractmethod
@@ -82,5 +65,5 @@ class InterviewPreprocessingService(ABC):
         pass
 
     @abstractmethod
-    def filterInterviewDataAndSave(self, interviewList):
+    def filterInterviewDataAndSave(self, interviewList, saveFilePath):
         pass
