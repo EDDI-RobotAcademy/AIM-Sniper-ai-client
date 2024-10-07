@@ -229,9 +229,9 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         print('answer: ', answer)
         result = self.__interviewPreprocessingOpenAIRepository.scoreAnswer(question, intent, answer)
         resultList = result.split('<s>')
-        print('score: ', resultList[0].replace('score: ', ''))
-        print('feedback: ', resultList[1].replace('feedback: ', ''))
-        print('example: ', resultList[2].replace('example: ', ''))
+        print('score: ', resultList[0].replace('score:', '').strip())
+        print('feedback: ', resultList[1].replace('feedback:', '').strip())
+        print('example: ', resultList[2].replace('example:', '').strip())
 
 
 
