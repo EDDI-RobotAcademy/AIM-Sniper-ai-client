@@ -8,11 +8,13 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
     __instance = None
     RANDOM_SEED = 42
     OVERCOME_KEYWORD = ['상사', '대처', '어떻게 해결', '예기치', '문제', '예상', '다르', '노하우', '극복', '동료',
-                        '갈등', '타 부서와', '다른 부서와', '분쟁' '위기', '산사태', '코드 리뷰']
+                        '갈등', '타 부서와', '다른 부서와', '분쟁' '위기', '산사태', '코드 리뷰', '전문가 팀원',
+                            '전문가인 팀원', '위기관리', '위기', '촉박']
 
-    ADAPTABILITY_KEYWORD = ['변화', '새로운 환경', '적응', '부서에 배치', '다른 부서에', '갑자기', '위기', '전문가 팀원', '위기관리']
+    ADAPTABILITY_KEYWORD = ['변화', '새로운 환경', '적응', '부서에 배치', '다른 부서에', '갑자기']
 
-    COWORKING_KEYWORD = ['어떤 사람', '조직 내', '어떤 역할', '어떠한 역할', '포지션', '무슨 역할', '다를 경우', '사교성', '협업', '비아이티적 동료']
+    COWORKING_KEYWORD = ['어떤 사람', '조직 내', '어떤 역할', '어떠한 역할', '포지션', '무슨 역할', '다를 경우', '사교성', '협업',
+                         '비아이티적 동료']
 
     PROJECT_KEYWORD = ['프로젝트', '책임', '팀워크', '리더십', '일정 관리', '목표 설정', '협업 과정', '성과 도출', '동아리']
 
@@ -23,7 +25,7 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
                      '성능 향상', '기술 스택', '소프트웨어 개발', '테스트 자동화', '애자일 방법론', '클라우드 컴퓨팅', '버전 관리',
                      '독커', '도커', '프레임워크', '보안', '커널 분석','소프트웨어', '오에스', '리팩토링', '테스트 코드', '디엔에스',
                      '에이치티티피','에이치티티피에스', '페어 프로그래밍', '좋은 개발 문화', '설계 프로그램', '아이씨티 역량',
-                     '아이피 주소', '메서드']
+                     '아이피 주소', '메서드', '자바스크립트']
 
     def __new__(cls):
         if cls.__instance is None:
@@ -45,15 +47,15 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
             interview['rule_based_intent'] = None
 
             if any(keyword in question for keyword in self.COWORKING_KEYWORD):
-                if all(keyword not in question for keyword in ['캐릭터', '게임', '창의성', '존경하는 인물']):
+                if all(keyword not in question for keyword in ['캐릭터', '게임', '창의성', '존경하는 인물', '씨에스', '큰 성과']):
                     interview['rule_based_intent'] = '협업 능력'
             elif any(keyword in question for keyword in self.OVERCOME_KEYWORD):
-                if all(keyword not in question for keyword in ['산사태', '영어로 서류', '제도적인 부패', '고령화', '십 년 후',
-                                                               '고객사', '진상', '연구와 기업', '영업', '공사']):
+                if all(keyword not in question for keyword in ['산사태', '영어로 서류', '제도적인 부패', '고령화', '십 년 후', '민원', '도메인'
+                                                               '고객사', '진상', '연구와 기업', '영업', '공사', '사회 문제', '무관', '윤리 경영']):
                     interview['rule_based_intent'] = '대처 능력'
             elif any(keyword in question for keyword in self.ADAPTABILITY_KEYWORD):
-                if all(keyword not in question for keyword in ['교대 근무', '교번 근무', '교번근무', '배치', '가고 싶은 회사',
-                                                               '물류를 둘러싼 환경', '물류 산업', '도메인', '분위기', '산 사태', '연구 방법론']):
+                if all(keyword not in question for keyword in ['교대 근무', '교번 근무', '교번근무', '배치', '가고 싶은 회사', '디자인', '물류',
+                                                               '도메인', '분위기', '산 사태', '연구 방법론', '시장', '만취자']):
                     interview['rule_based_intent'] = '적응력'
             elif any(keyword in question for keyword in self.PROJECT_KEYWORD):
                 if all(keyword not in question for keyword in ['창의성', '팀워크', '산사태', '역할', '경영을 책임',
@@ -63,7 +65,7 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
                 if all(keyword not in question for keyword in ['기억에 남는 과목']):
                     interview['rule_based_intent'] = '자기 개발'
             elif any(keyword in question for keyword in self.SKILL_KEYWORD):
-                if all(keyword not in question for keyword in ['이슈', '마케팅', '글로벌 시대', '건축학과', '설계 프로그램']):
+                if all(keyword not in question for keyword in ['이슈', '마케팅', '글로벌 시대', '건축학과', '설계 프로그램', '복장']):
                     interview['rule_based_intent'] = '기술적 역량'
 
         return interviewList
@@ -155,16 +157,6 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
         flattenedList = list(itertools.chain.from_iterable(doublyLinkedList))
 
         return flattenedList
-
-    def removeQuestionIfKeywordIn(self, keyword, interviewList):
-        newInterviewList = []
-        for interview in interviewList:
-            if keyword not in interview.get('question'):
-                newInterviewList.append(interview)
-                continue
-            newInterviewList.append(interview)
-
-        return newInterviewList
 
     def calculateDifferentIntentRatios(self, interviewList, intentKey, compareKey):
         # 각 intent를 기준으로 데이터를 그룹화
