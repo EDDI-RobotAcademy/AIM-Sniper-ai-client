@@ -38,7 +38,6 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         self.__interviewPreprocessingFileRepository.saveFile(savePath, dataList, silent)
 
     def saveConcatenatedRawJsonFile(self, readFilePath, saveFilePath):
-
         dataList = self.__interviewPreprocessingFileRepository.readFile(readFilePath)
 
         os.makedirs(saveFilePath, exist_ok=True)
@@ -50,28 +49,6 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
     def separateJsonFileByInfo(self, readFilePath, saveFilePath):
         extractedData = self.__interviewPreprocessingFileRepository.extractColumns(readFilePath)
         self.__interviewPreprocessingFileRepository.separateFileByInfo(extractedData, saveFilePath)
-
-    def flattenFileToList(self, filePath):
-        separatedJsonFiles = self.__interviewPreprocessingFileRepository.readFile(filePath)
-        if '.json' in filePath:
-            return separatedJsonFiles
-        interviewList = list(itertools.chain(*separatedJsonFiles))
-
-        return interviewList
-
-    def samplingData(self, filePath, nAnswer, mQuestion):
-        separatedJsonFiles = self.__interviewPreprocessingFileRepository.readFile(filePath)
-        interviewList = list(itertools.chain(*separatedJsonFiles))
-
-        sampledAnswerIndex, sampledQuestionIndex = (
-            self.__interviewPreprocessingFileRepository.
-            samplingAnswerAndQuestionIndex(len(interviewList), nAnswer, mQuestion))
-
-        sampledAnswerList = [interviewList[idx]['answer'] for idx in sampledAnswerIndex]
-        sampledRealQuestionList = [interviewList[idx]['question'] for idx in sampledAnswerIndex]
-        sampledQuestionList = [interviewList[idx]['question'] for idx in sampledQuestionIndex]
-
-        return sampledAnswerList, sampledRealQuestionList, sampledQuestionList
 
     def transformDataWithPOSTagging(self, sentenceList):
         mecab = self.__interviewPreprocessingCorpusRepository.loadMecab()
@@ -114,34 +91,13 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         )
         return cosineSimilarityList
 
-    def countWantToData(self, keyword, interviewDataPath):
-        return self.__interviewPreprocessingCorpusRepository.countWantToData(keyword, interviewDataPath)
-
-    def saveSimilarityResult(self, sentenceTransformerCosineSimilarityList, answerList, realQuestionList, questionList, saveFilePath):
-        os.makedirs(saveFilePath, exist_ok=True)
-        outputFilename = 'similarity_sentence_transformer.txt'
-        saveFilePath = os.path.join(saveFilePath, outputFilename)
-        with open(saveFilePath, 'w', encoding='utf-8') as file:
-            for idx, cosineSimilarity in enumerate(sentenceTransformerCosineSimilarityList):
-                topFiveIndex = sorted(range(len(cosineSimilarity)),
-                                      key=lambda i: cosineSimilarity[i], reverse=True)[:5]
-                topFiveValue = [cosineSimilarity[i] for i in topFiveIndex]
-
-                file.write(f"**실제 질문**: {realQuestionList[idx]}\n")
-                file.write(f"**답변**: {answerList[idx]}\n")
-                file.write("\n")
-
-                for i, index in enumerate(topFiveIndex):
-                    file.write(f"**질문{i + 1}**: {questionList[index]}\n")
-                    file.write(f"**유사도**: {topFiveValue[i]}\n")
-                file.write("-------------------------------------------------------------------\n")
-            print(f"File saved at {saveFilePath}.")
-
-    def intentLabeling(self, interviewList):
+    def intentLabeling(self, interviewList, saveFilePath):
         labeledInterviewList = self.__interviewPreprocessingIntentRepository.intentLabelingByRuleBase(interviewList)
         countingData = self.__interviewPreprocessingIntentRepository.countLabeledInterview(labeledInterviewList)
         print('labeling result : ', countingData)
-        savePath = f'assets\\json_data_intent_labeled\\total_intent_labeled_{len(labeledInterviewList)}.json'
+
+        os.makedirs(saveFilePath, exist_ok=True)
+        savePath = os.path.join(saveFilePath, f'total_intent_labeled_{len(labeledInterviewList)}.json')
         self.__interviewPreprocessingFileRepository.saveFile(savePath, labeledInterviewList)
 
         labeledInterviewListNotNull = []
@@ -150,16 +106,8 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
             if intent is not None:
                 labeledInterviewListNotNull.append(interview)
 
-        savePath = f'assets\\json_data_intent_labeled\\intent_labeled_not_none_{len(labeledInterviewListNotNull)}.json'
+        savePath = os.path.join(saveFilePath, f'intent_labeled_not_null_{len(labeledInterviewListNotNull)}.json')
         self.__interviewPreprocessingFileRepository.saveFile(savePath, labeledInterviewListNotNull)
-
-        return labeledInterviewList
-
-    def labeledInterviewNotNull(self, interviewList):
-        labeledInterviewList = self.__interviewPreprocessingIntentRepository.intentLabelingByRuleBase(interviewList)
-        countingData = self.__interviewPreprocessingIntentRepository.countLabeledInterview(labeledInterviewList)
-        print('labeling result : ', countingData)
-        savePath = f'assets\\json_data_intent_labeled\\total_intent_labeled_{len(labeledInterviewList)}.json'
 
     def splitIntentLabeledData(self, labeledInterviewList, sampleSize):
         interviewListIntentIsNone, interviewListIntentIsNotNone = (
@@ -187,11 +135,8 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
         return sampledNoneIntentQuestion, sampledIntentQuestions
 
-    def readFile(self, filePath, keyword=None):
+    def readFile(self, filePath):
         interviewList = self.__interviewPreprocessingFileRepository.readFile(filePath)
-        if keyword != None:
-            interviewList = self.__interviewPreprocessingIntentRepository.removeQuestionIfKeywordIn(keyword, interviewList)
-
         return interviewList
 
     def getLLMIntent(self, inputFile, outputSavePath):
@@ -238,14 +183,6 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
         return comparisonResult
 
-    def separateFileByIntent(self, filePath):
-        interviewDataList = self.__interviewPreprocessingFileRepository.readFile(filePath)
-
-        extractedData = self.__interviewPreprocessingFileRepository.extractIntent(interviewDataList)
-
-        savePath = 'assets\\json_data_intent_separated\\'
-        self.__interviewPreprocessingFileRepository.separateFileByInfo(extractedData, savePath)
-
     def countWordAndSave(self, interviewList):
         questionWordList, answerWordList = (
             self.__interviewPreprocessingFileRepository.splitSentenceToWord(interviewList))
@@ -272,16 +209,15 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
         print("File saved at assets\\csv_data\\answer_word_frequencies.csv")
 
-    def filterInterviewDataAndSave(self, interviewList):
+    def filterInterviewDataAndSave(self, interviewList, saveFilePath):
         stopWordList = self.__interviewPreprocessingFileRepository.loadStopWordList()
         filteredInterviewList = (
             self.__interviewPreprocessingFileRepository.filterInterviewData(interviewList, stopWordList))
 
-        if not os.path.exists('assets\\json_data_filtered'):
-            os.mkdir('assets\\json_data_filtered')
+        os.makedirs(saveFilePath, exist_ok=True)
 
-        filePath = 'assets\\json_data_filtered\\filtered_interview_data.json'
-        self.__interviewPreprocessingFileRepository.saveFile(filePath, filteredInterviewList)
+        saveFilePath = os.path.join(saveFilePath, f'filtered_data_{len(filteredInterviewList)}.json')
+        self.__interviewPreprocessingFileRepository.saveFile(saveFilePath, filteredInterviewList)
 
 
 

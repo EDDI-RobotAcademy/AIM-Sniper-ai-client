@@ -28,9 +28,5 @@ class InterviewPreprocessingIntentRepository(ABC):
         pass
 
     @abstractmethod
-    def removeQuestionIfKeywordIn(self, keyword, interviewList):
-        pass
-
-    @abstractmethod
     def calculateDifferentIntentRatios(self, interviewList, intentKey, compareKey):
         pass
