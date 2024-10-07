@@ -38,7 +38,6 @@ class InterviewPreprocessingCorpusRepositoryImpl(InterviewPreprocessingCorpusRep
 
     def posTagging(self, mecab, text):
         posTagging = mecab.pos(text)
-        # print(posTagging)
         # 일반 명사,
         return posTagging
 
@@ -48,7 +47,6 @@ class InterviewPreprocessingCorpusRepositoryImpl(InterviewPreprocessingCorpusRep
 
         # 특정 태그에 포함된 단어들만 리스트에 저장
         filteredWords = [word for word, tag in posTagging if any(t in tag for t in targetTags)]
-        # print(list(set(filtered_words)))
         return filteredWords
 
     def loadSentenceTransformer(self):

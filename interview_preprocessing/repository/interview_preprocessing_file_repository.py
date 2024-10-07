@@ -23,10 +23,6 @@ class InterviewPreprocessingFileRepository(ABC):
         pass
 
     @abstractmethod
-    def extractIntent(self, interviewDataList):
-        pass
-
-    @abstractmethod
     def splitSentenceToWord(self, interviewList):
         pass
 

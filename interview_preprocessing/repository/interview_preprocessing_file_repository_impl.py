@@ -111,25 +111,6 @@ class InterviewPreprocessingFileRepositoryImpl(InterviewPreprocessingFileReposit
 
         return sampledAnswerIndex, sampledQuestionIndex
 
-    def extractIntent(self, interviewDataList):
-        extractedData = {}
-
-        for data in tqdm(interviewDataList, total=len(interviewDataList), desc='extracting columns'):
-            intent = data.get('rule_based_intent')
-            intentKey = intent.replace(' ', '_')
-            if intentKey not in extractedData:
-                extractedData[intentKey] = []
-
-            extractedData[intentKey].append({
-                'question': data.get('question'),
-                'answer': data.get('answer'),
-                'summary': data.get('summary'),
-                'occupation': data.get('occupation'),
-                'experience': data.get('experience'),
-                'rule_based_intent': data.get('rule_based_intent')
-            })
-        return extractedData
-
     def splitSentenceToWord(self, interviewList):
         questionWordList = []
         answerWordList = []
