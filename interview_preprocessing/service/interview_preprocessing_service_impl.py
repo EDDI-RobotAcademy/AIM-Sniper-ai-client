@@ -219,6 +219,23 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         saveFilePath = os.path.join(saveFilePath, f'filtered_data_{len(filteredInterviewList)}.json')
         self.__interviewPreprocessingFileRepository.saveFile(saveFilePath, filteredInterviewList)
 
+    def getLLMScore(self, inputFilePath):
+        interviewList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)
+        sample = interviewList[6]
+        question = sample.get('question')
+        intent = sample.get('rule_based_intent')
+        answer = sample.get('answer')
+        print('question: ', question)
+        print('answer: ', answer)
+        result = self.__interviewPreprocessingOpenAIRepository.scoreAnswer(question, intent, answer)
+        resultList = result.split('<s>')
+        print('score: ', resultList[0].replace('score: ', ''))
+        print('feedback: ', resultList[1].replace('feedback: ', ''))
+        print('example: ', resultList[2].replace('example: ', ''))
+
+
+
+
 
 
 

@@ -57,3 +57,25 @@ class InterviewPreprocessingOpenAIRepositoryImpl(InterviewPreprocessingOpenAIRep
             ]
         )
         return response.choices[0].message.content.strip()
+
+    def scoreAnswer(self, question, intent, answer):
+        response = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "너는 면접 대상자의 답변을 채점하는 유용한 채용 담당자야."},
+                {"role": "user",
+                 "content": """
+                    [Question] """ + question + """ [Intent] """ + intent + """
+                    [Answer]""" + answer + """
+
+                    [Note]
+                    1. [Answer]는 면접관 [Intent]를 파악하기 위한 [Question]에 대한 면접 대상자의 답변이야.
+                    2. Answer가 얼마나 question에 대해 잘 대답했는지를 1~100점 사이에서 평가해줘. 
+                    3. 답변에 대한 feedback과 네가 100점이라고 생각하는 Answer를 제공해줘.
+                    3. output은 "score:~점<s>feedback:피드백<s>example:100점으로 고친 답변" 형식으로 출력해줘. 
+                """
+                 }
+            ]
+        )
+        return response.choices[0].message.content.strip()
+
