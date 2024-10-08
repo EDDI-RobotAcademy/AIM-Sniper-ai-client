@@ -1,17 +1,19 @@
-import json
-import os
-import zipfile
+import json, os, zipfile
+from datetime import datetime, timedelta
 from io import BytesIO
 
+from dotenv import load_dotenv
+
 import dart_fss as dart
-
-from datetime import datetime, timedelta
-
 import openai
 import requests
 from bs4 import BeautifulSoup
-from dotenv import load_dotenv
-from tqdm import tqdm
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+options = Options()
+options.add_argument("--headless=new")
+import time
 
 from making_report.repository.data_for_corp_business_repository import DataForCorpBusinessRepository
 
@@ -28,6 +30,7 @@ if not openaiApiKey:
 
 class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
     __instance = None
+    # WANTED_CORP_LIST = ["케이티"]
     WANTED_CORP_LIST = ["SK네트웍스", "삼성전자", "현대자동차", "SK하이닉스", "LG전자", "POSCO홀딩스", "NAVER", "현대모비스", "기아", "LG화학", "삼성물산", "롯데케미칼", "SK이노베이션", "S-Oil", "CJ제일제당", "현대건설", "삼성에스디에스", "LG디스플레이", "아모레퍼시픽", "한화솔루션", "HD현대중공업", "LS", "두산에너빌리티", "SK텔레콤", "케이티", "LG유플러스", "HJ중공업", "삼성전기", "한화에어로스페이스", "효성", "코웨이", "한샘", "신세계", "이마트", "현대백화점", "LG생활건강", "GS리테일", "오뚜기", "농심", "롯데웰푸드", "CJ ENM", "한화", "LG이노텍", "삼성바이오로직스", "셀트리온"]
 
     SEARCH_YEAR_GAP = 1
@@ -125,75 +128,51 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
 
         return corpReceiptCodeDict
 
-    def apiResponseOfCorpDocument(self, receiptCode):
-        url = 'https://opendart.fss.or.kr/api/document.xml'
-        params = {
-            'crtfc_key': dartApiKey,
-            'rcept_no': receiptCode}
+    def getDataFromRequest(self, url, wanted_tag):
+        response = requests.get(url)
+        soup = BeautifulSoup(response.content, "html.parser")
 
-        return requests.get(url, params=params)
-
-    def getDataFromZipFile(self, response):
-        file = BytesIO(response.content)
-        zfile = zipfile.ZipFile(file, 'r')
-        corpDocuList = sorted(zfile.namelist(), key=lambda x: len(x))
-
-        return zfile, corpDocuList
-
-    def getOverviewDataFromXml(self, xmlFile, corpName, receiptCode):
-        try:
-            soup = BeautifulSoup(xmlFile, 'lxml-xml').find_all("SECTION-2")
-            index = 0
-            for idx, data in enumerate(soup):
-                if data.find("TITLE").text[:15] == "1. 사업의 개요":
-                    index = idx
-                    break
-
-            return soup[index]
-
-        except Exception as e:
-            print(f"\n*** getOverviewDataFromXml '{corpName}-{receiptCode}' -> {e}")
-            pass
-
-    def getAllDataFromXml(self, xmlFile, wanted_tag):
-        soup = BeautifulSoup(xmlFile, 'lxml-xml')
         return soup.find_all(wanted_tag)
 
+    def getWebDriverAboutReport(self, receiptCode):
+        url = f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={receiptCode}"
+        driver = webdriver.Chrome(options=options)
+        driver.get(url=url)
+        return driver
+
+    def getContentsFromDriver(self, driver):
+        dartContent = driver.find_element(By.CSS_SELECTOR, "#listTree")
+        dartContentItems = dartContent.find_elements(By.CSS_SELECTOR, "a")
+
+        return dartContentItems
+
+    def findBusinessData(self, item, driver):
+        if "사업의 개요" in item.text:
+            item.click()
+            business_url = driver.find_element(By.CSS_SELECTOR, ".viewWrap iframe").get_attribute("src")
+            paragraphList = self.getDataFromRequest(business_url, "p")
+            result = [paragraph.get_text().replace("\xa0", " ")
+                      for paragraph in paragraphList]
+
+            return "\n".join(result)
+
     def getRawDataFromDart(self):
-        rawDataDict = {}
         rawCorpDataDict = {}
         for corpName, receiptCode in self.getCorpReceiptCode().items():
             print(f"* CB_RAW - {corpName}")
-            response = self.apiResponseOfCorpDocument(receiptCode)
-            zipFile, corpDocuList = self.getDataFromZipFile(response)
-            xmlFile = zipFile.read(corpDocuList[0])
+            driver = self.getWebDriverAboutReport(receiptCode)
+            time.sleep(1)
+            dartContentItems = self.getContentsFromDriver(driver)
 
-            rawDataDict[corpName] = str(xmlFile)
-            rawCorpDataDict[corpName] = str(self.getOverviewDataFromXml(xmlFile, corpName, receiptCode))
+            businessData = " ".join(self.findBusinessData(item, driver)
+                                     for item in dartContentItems
+                                     if self.findBusinessData(item, driver) != None)
 
-        self.saveData(rawDataDict, "../data/dart_corp_business/raw_data")
-        self.saveData(rawCorpDataDict, "../data/dart_corp_business/preprocessed_data_v1")
+            rawCorpDataDict[corpName] = businessData
+
+        self.saveData(rawCorpDataDict, "../data/dart_corp_business/preprocessed_data_v2")
 
         return rawCorpDataDict
-
-    def preprocessTaginParagraph(self, paragraph):
-        return paragraph.get_text().replace("\n", "")
-
-    def preprocessRawData(self, rawData):
-        preprocessDataDict = {}
-
-        for corpName, corpData in rawData.items():
-            print(f"* CB_PREPRO - {corpName}")
-            paragraphList = self.getAllDataFromXml(corpData, "P")
-
-            result = [self.preprocessTaginParagraph(paragraph)
-                      for paragraph in paragraphList]
-
-            preprocessDataDict[corpName] = "\n".join(result)
-
-        self.saveData(preprocessDataDict, "../data/dart_corp_business/preprocessed_data_v2")
-
-        return preprocessDataDict
 
     def changeContentStyle(self, preprocessedData):
         maxTokenLength = 16385
