@@ -30,51 +30,6 @@ def saveSampledLabeledInterview(totalLabeledFile, labeledFilePath):
     interview.samplingAndSaveLabeledData(interviewListIntentIsNone, interviewListIntentIsNotNone, 200, labeledFilePath)
 
 
-def compareCosineSimilarity(filePath):
-    sentenceTransformer = interview.loadSentenceTransformer()
-    startIntent = '협업 능력'
-    nextIntentList = ['대처 능력', '적응력', '기술적 역량', '프로젝트 경험', '자기 개발']
-    labeledInterviewList = interview.readFile(filePath)
-
-    startInterviewList = [data for data in labeledInterviewList
-                          if data.get('rule_based_intent') == startIntent]
-
-    for i, data in enumerate(tqdm(startInterviewList, total=len(startInterviewList), desc='compareCosineSimilarity')):
-        currentInterview = data
-        sessionData = []
-        sessionData.append(currentInterview)
-
-        for idx, nextIntent in enumerate(nextIntentList):
-            nextIntentInterviewList = [data for data in labeledInterviewList
-                                       if data.get('rule_based_intent') == nextIntent]
-            nextQuestionList = [data.get('question') for data in nextIntentInterviewList]
-
-            transformedAnswer = interview.transformDataWithPOSTagging(currentInterview.get('answer'))
-            transformedQuestionList = interview.transformDataWithPOSTagging(nextQuestionList)
-
-            similarityList = interview.cosineSimilarityBySentenceTransformer(
-                sentenceTransformer,
-                np.array(transformedAnswer).reshape(1, -1),
-                transformedQuestionList
-            )
-
-            sortedSimilarityList = sorted(enumerate(similarityList[0]), key=lambda x: x[1], reverse=True)
-
-            top10PercentCount = int(len(sortedSimilarityList) * 0.1)
-
-            top10percentSimilarity = sortedSimilarityList[:top10PercentCount]
-
-            selectedIdx, similarity = random.choice(top10percentSimilarity)
-            nextInterview = nextIntentInterviewList[selectedIdx]
-            nextInterview['similarity'] = float(similarity)
-            sessionData.append(nextInterview)
-            currentInterview = nextInterview
-
-        currentTime = datetime.now().strftime("%m%d%H%M%S%f")
-        os.makedirs('assets\\json_data_session', exist_ok=True)
-        interview.saveFile(sessionData, f'assets\\json_data_session\\result_{currentTime}.json', silent=True)
-
-
 def createSessionData(filePath, iteration):
     sentenceTransformer = interview.loadSentenceTransformer()
     labeledInterviewList = interview.readFile(filePath)
@@ -147,8 +102,8 @@ def comparisonRatioResultToCsv(filePath):
     labeledInterviewList = interview.readFile(filePath)
     interview.comparisonResultToCsv(labeledInterviewList)
 
-def scoreAnswer(finalIntentPath):
-    interview.getLLMScore(finalIntentPath)
+def scoreAnswer(sessionDataFilePath):
+    interview.getLLMScore(sessionDataFilePath)
 
 
 if __name__ == '__main__':
@@ -171,12 +126,12 @@ if __name__ == '__main__':
 
     # 전체 데이터로 세션 만들기
     finalIntentPath = os.path.join(labeledFilePath, 'intent_labeled_not_null_21474.json')
-
-    # # compareCosineSimilarity(finalIntentPath)
     # createSessionData(finalIntentPath, 2)
 
+    sessionDataPath = 'assets\\json_data_session'
+    sessionDataFilePath = os.path.join(sessionDataPath, 'data_set_1\\session_1.json')
     # 채점 및 피드백
-    # scoreAnswer(finalIntentPath)
+    # scoreAnswer(sessionDataFilePath)
 
     # LLM 의도 라벨링
     # labeledInputFile = os.path.join(labeledFilePath, 'sample_intent_labeled_1091_qualitative_eval.json')
