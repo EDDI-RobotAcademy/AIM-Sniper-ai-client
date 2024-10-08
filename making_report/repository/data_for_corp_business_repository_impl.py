@@ -128,11 +128,6 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
 
         return corpReceiptCodeDict
 
-    def getDataFromRequest(self, url, wanted_tag):
-        response = requests.get(url)
-        soup = BeautifulSoup(response.content, "html.parser")
-
-        return soup.find_all(wanted_tag)
 
     def getWebDriverAboutReport(self, receiptCode):
         url = f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={receiptCode}"
@@ -142,19 +137,24 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
 
     def getContentsFromDriver(self, driver):
         dartContent = driver.find_element(By.CSS_SELECTOR, "#listTree")
-        dartContentItems = dartContent.find_elements(By.CSS_SELECTOR, "a")
+        return dartContent.find_elements(By.CSS_SELECTOR, "a")
 
-        return dartContentItems
+    def getUrlFromWantedContent(self, driver, contentList, wantedContent):
+        url = []
+        for content in contentList:
+            if wantedContent in content.text:
+                content.click()
+                url.append(driver.find_element(By.CSS_SELECTOR, ".viewWrap iframe").get_attribute("src"))
+        return url
 
-    def findBusinessData(self, item, driver):
-        if "사업의 개요" in item.text:
-            item.click()
-            business_url = driver.find_element(By.CSS_SELECTOR, ".viewWrap iframe").get_attribute("src")
-            paragraphList = self.getDataFromRequest(business_url, "p")
-            result = [paragraph.get_text().replace("\xa0", " ")
-                      for paragraph in paragraphList]
+    def getTagDataFromRequest(self, wantedContentUrl, wanted_tag):
+        tagDataList = []
+        for url in wantedContentUrl:
+            response = requests.get(url)
+            soup = BeautifulSoup(response.content, "html.parser")
+            tagDataList.extend(soup.find_all(wanted_tag))
 
-            return "\n".join(result)
+        return tagDataList
 
     def getRawDataFromDart(self):
         rawCorpDataDict = {}
@@ -162,13 +162,16 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
             print(f"* CB_RAW - {corpName}")
             driver = self.getWebDriverAboutReport(receiptCode)
             time.sleep(1)
-            dartContentItems = self.getContentsFromDriver(driver)
 
-            businessData = " ".join(self.findBusinessData(item, driver)
-                                     for item in dartContentItems
-                                     if self.findBusinessData(item, driver) != None)
+            contentList = self.getContentsFromDriver(driver)
+            wantedContentUrl = self.getUrlFromWantedContent(driver, contentList, "사업의 개요")
 
-            rawCorpDataDict[corpName] = businessData
+            paragraphList = self.getTagDataFromRequest(wantedContentUrl, "p")
+            combinedParagraph = " ".join([paragraph.get_text().replace("\xa0", " ")
+                                          for paragraph in paragraphList
+                                          if paragraph.get_text() != None])
+
+            rawCorpDataDict[corpName] = combinedParagraph
 
         self.saveData(rawCorpDataDict, "../data/dart_corp_business/preprocessed_data_v2")
 
