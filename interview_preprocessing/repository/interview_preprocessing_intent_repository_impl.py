@@ -99,8 +99,6 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
                     'question': interview['question'],
                     'answer': interview['answer'],
                     'summary': interview['summary'],
-                    'occupation': interview['occupation'],
-                    'experience': interview['experience'],
                     'rule_based_intent': interview['rule_based_intent']
                 })
             else:
@@ -108,8 +106,6 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
                     'question': interview['question'],
                     'answer': interview['answer'],
                     'summary': interview['summary'],
-                    'occupation': interview['occupation'],
-                    'experience': interview['experience'],
                     'rule_based_intent': interview['rule_based_intent']
                 })
 
@@ -141,9 +137,7 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
                     "question": interview['question'],
                     "rule_based_intent": interview['rule_based_intent'],
                     'answer': interview['answer'],
-                    'summary': interview['summary'],
-                    'occupation': interview['occupation'],
-                    'experience': interview['experience']
+                    'summary': interview['summary']
                 })
 
         # 각 의도 별로 랜덤 샘플링

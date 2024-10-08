@@ -221,18 +221,21 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
     def getLLMScore(self, inputFilePath):
         interviewList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)
-        sample = interviewList[6]
-        question = sample.get('question')
-        intent = sample.get('rule_based_intent')
-        answer = sample.get('answer')
-        print('question: ', question)
-        print('answer: ', answer)
-        result = self.__interviewPreprocessingOpenAIRepository.scoreAnswer(question, intent, answer)
-        resultList = result.split('<s>')
-        print('score: ', resultList[0].replace('score:', '').strip())
-        print('feedback: ', resultList[1].replace('feedback:', '').strip())
-        print('example: ', resultList[2].replace('example:', '').strip())
 
+        for interview in interviewList:
+            question = interview.get('question')
+            intent = interview.get('rule_based_intent')
+            answer = interview.get('answer')
+            result = self.__interviewPreprocessingOpenAIRepository.scoreAnswer(question, intent, answer)
+            resultList = result.split('<s>')
+            interview['score'] = resultList[0].replace('score:', '').replace('\"', '').strip()
+            interview['feedback'] = resultList[1].replace('feedback:', '').replace('\"', '').strip()
+            interview['alternative_answer'] = resultList[2].replace('example:', '').replace('\"', '').strip()
+
+        savePath = 'assets\\json_data_scored\\'
+        os.makedirs(savePath, exist_ok=True)
+        saveFilePath = os.path.join(savePath, f'session_scored_{len(interviewList)}.json')
+        self.__interviewPreprocessingFileRepository.saveFile(saveFilePath, interviewList)
 
 
 

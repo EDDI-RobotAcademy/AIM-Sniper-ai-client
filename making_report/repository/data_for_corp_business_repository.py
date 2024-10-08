@@ -27,19 +27,19 @@ class DataForCorpBusinessRepository(ABC):
         pass
 
     @abstractmethod
-    def apiResponseOfCorpDocument(self, receiptCode):
+    def getDataFromRequest(self, url, wanted_tag):
         pass
 
     @abstractmethod
-    def getDataFromZipFile(self, response):
+    def getWebDriverAboutReport(self, receiptCode):
         pass
 
     @abstractmethod
-    def getOverviewDataFromXml(self, xmlFile, corpName):
+    def getContentsFromDriver(self, driver):
         pass
 
     @abstractmethod
-    def getAllDataFromXml(self, xmlFile, wanted_tag):
+    def findBusinessData(self, item, driver):
         pass
 
     @abstractmethod
@@ -47,10 +47,5 @@ class DataForCorpBusinessRepository(ABC):
         pass
 
     @abstractmethod
-    def preprocessRawData(self, rawData):
-        pass
-
-    @abstractmethod
     def changeContentStyle(self, preprocessedData):
         pass
-
