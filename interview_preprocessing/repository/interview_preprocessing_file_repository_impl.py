@@ -80,8 +80,6 @@ class InterviewPreprocessingFileRepositoryImpl(InterviewPreprocessingFileReposit
                 'question': data['dataSet']['question']['raw']['text'],
                 'answer': data['dataSet']['answer']['raw']['text'],
                 'summary': data['dataSet']['answer']['summary']['text'],
-                'occupation': data['dataSet']['info']['occupation'],
-                'experience': data['dataSet']['info']['experience'],
             })
         return extractedData
 
@@ -159,8 +157,6 @@ class InterviewPreprocessingFileRepositoryImpl(InterviewPreprocessingFileReposit
                     'question': filteredQuestion,
                     'answer': filteredAnswer,
                     'summary': filteredSummary,
-                    'occupation': data.get('occupation'),
-                    'experience': data.get('experience'),
                 }
                 filteredInterviewList.append(filteredData)
 
