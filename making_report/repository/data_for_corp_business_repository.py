@@ -27,7 +27,7 @@ class DataForCorpBusinessRepository(ABC):
         pass
 
     @abstractmethod
-    def getDataFromRequest(self, url, wanted_tag):
+    def getTagDataFromRequest(self, wantedContentUrl, wanted_tag):
         pass
 
     @abstractmethod
@@ -36,10 +36,6 @@ class DataForCorpBusinessRepository(ABC):
 
     @abstractmethod
     def getContentsFromDriver(self, driver):
-        pass
-
-    @abstractmethod
-    def findBusinessData(self, item, driver):
         pass
 
     @abstractmethod
