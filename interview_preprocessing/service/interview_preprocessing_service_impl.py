@@ -221,21 +221,24 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
     def getLLMScore(self, inputFilePath):
         interviewList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)
+        if '.json' in inputFilePath:
+            interviewList = [interviewList]
 
-        for interview in interviewList:
-            question = interview.get('question')
-            intent = interview.get('rule_based_intent')
-            answer = interview.get('answer')
-            result = self.__interviewPreprocessingOpenAIRepository.scoreAnswer(question, intent, answer)
-            resultList = result.split('<s>')
-            interview['score'] = resultList[0].replace('score:', '').replace('\"', '').strip()
-            interview['feedback'] = resultList[1].replace('feedback:', '').replace('\"', '').strip()
-            interview['alternative_answer'] = resultList[2].replace('example:', '').replace('\"', '').strip()
+        for idx, interviews in enumerate(interviewList):
+            for interview in interviews:
+                question = interview.get('question')
+                intent = interview.get('rule_based_intent')
+                answer = interview.get('answer')
+                result = self.__interviewPreprocessingOpenAIRepository.scoreAnswer(question, intent, answer)
+                resultList = result.split('<s>')
+                interview['score'] = resultList[0].replace('score:', '').replace('\"', '').strip()
+                interview['feedback'] = resultList[1].replace('feedback:', '').replace('\"', '').strip()
+                interview['alternative_answer'] = resultList[2].replace('example:', '').replace('\"', '').strip()
 
-        savePath = 'assets\\json_data_scored\\'
-        os.makedirs(savePath, exist_ok=True)
-        saveFilePath = os.path.join(savePath, f'session_scored_{len(interviewList)}.json')
-        self.__interviewPreprocessingFileRepository.saveFile(saveFilePath, interviewList)
+            savePath = 'assets\\json_data_scored\\'
+            os.makedirs(savePath, exist_ok=True)
+            saveFilePath = os.path.join(savePath, f'session_scored_{(idx+1)}.json')
+            self.__interviewPreprocessingFileRepository.saveFile(saveFilePath, interviews)
 
 
 
