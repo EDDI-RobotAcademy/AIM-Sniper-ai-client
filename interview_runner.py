@@ -67,8 +67,8 @@ def createSessionData(filePath, iteration):
 
         allSortedSimilarityList.append(sortedSimilarityList)
 
-    startIntent = '협업 능력'
-    nextIntentList = ['대처 능력', '적응력', '기술적 역량', '프로젝트 경험', '자기 개발']
+    startIntent = intentList[0]
+    nextIntentList = intentList[1:]
 
     startInterviewList = [data for data in labeledInterviewList
                           if data.get('rule_based_intent') == startIntent]
@@ -95,15 +95,15 @@ def createSessionData(filePath, iteration):
             os.makedirs(savePath, exist_ok=True)
             interview.saveFile(sessionData, os.path.join(savePath, f'session_{j+1}.json'), silent=True)
 
+def scoreAnswer(sessionDataPath):
+    interview.getLLMScore(sessionDataPath)
+
 def getLLMIntent(inputFile, labeledFilePath):
     interview.getLLMIntent(inputFile, labeledFilePath)
 
 def comparisonRatioResultToCsv(filePath):
     labeledInterviewList = interview.readFile(filePath)
     interview.comparisonResultToCsv(labeledInterviewList)
-
-def scoreAnswer(sessionDataFilePath):
-    interview.getLLMScore(sessionDataFilePath)
 
 
 if __name__ == '__main__':
@@ -128,10 +128,11 @@ if __name__ == '__main__':
     finalIntentPath = os.path.join(labeledFilePath, 'intent_labeled_not_null_21474.json')
     # createSessionData(finalIntentPath, 2)
 
-    sessionDataPath = 'assets\\json_data_session'
-    sessionDataFilePath = os.path.join(sessionDataPath, 'data_set_1\\session_1.json')
     # 채점 및 피드백
-    # scoreAnswer(sessionDataFilePath)
+    sessionDataPath = 'assets\\json_data_session'
+    # 테스트용 path
+    # sessionDataPath = os.path.join(sessionDataPath, 'data_set_1\\session_1.json')
+    scoreAnswer(sessionDataPath)
 
     # LLM 의도 라벨링
     # labeledInputFile = os.path.join(labeledFilePath, 'sample_intent_labeled_1091_qualitative_eval.json')
