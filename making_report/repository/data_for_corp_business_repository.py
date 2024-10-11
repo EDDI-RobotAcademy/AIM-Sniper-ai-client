@@ -23,25 +23,9 @@ class DataForCorpBusinessRepository(ABC):
         pass
 
     @abstractmethod
-    def getCorpReceiptCode(self):
+    def getRawBusinessDataFromDart(self):
         pass
 
     @abstractmethod
-    def getTagDataFromRequest(self, wantedContentUrl, wanted_tag):
-        pass
-
-    @abstractmethod
-    def getWebDriverAboutReport(self, receiptCode):
-        pass
-
-    @abstractmethod
-    def getContentsFromDriver(self, driver):
-        pass
-
-    @abstractmethod
-    def getRawDataFromDart(self):
-        pass
-
-    @abstractmethod
-    def changeContentStyle(self, preprocessedData):
+    def changeContentStyle(self, businessData):
         pass

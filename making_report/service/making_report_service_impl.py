@@ -28,18 +28,21 @@ class MakingReportServiceImpl(MakingReportService):
     def makingReport(self):
         corpCodeDict = self.__corpBusinessRepository.getCorpCodeDict()
 
+
         print(f"* CORP_OVERVIEW start ----------------")
         corpOverviewRawData = self.__corpOverviewRepository.getRawOverviewDataFromDart(corpCodeDict)
         corpOverviewPreprocessedData = self.__corpOverviewRepository.preprocessRawData(corpOverviewRawData)
 
+
         print(f"* CORP_BUSINESS start ----------------")
-        corpBusinessRawData = self.__corpBusinessRepository.getRawDataFromDart()
-        corpBusinessPreprocessedData = self.__corpBusinessRepository.preprocessRawData(corpBusinessRawData)
-        corpBusinessSummary = self.__corpBusinessRepository.changeContentStyle(corpBusinessPreprocessedData)
+        rawSummaryDict, rawTableDict = self.__corpBusinessRepository.getRawBusinessDataFromDart()
+        corpBusinessSummary = self.__corpBusinessRepository.changeContentStyle(rawSummaryDict)
+
 
         print(f"* FINANCIAL_STATEMENTS start ----------------")
         financeProfitDict = self.__financeRepository.getFinancialDataFromDart(corpCodeDict)
 
+
         print(f"* REPORT start ----------------")
-        makeReport = self.__reportRepository.gatherData(corpCodeDict.keys(),
-                                                        corpOverviewPreprocessedData, financeProfitDict, corpBusinessSummary)
+        makeReport = self.__reportRepository.gatherData(
+            corpCodeDict.keys(), corpOverviewPreprocessedData, financeProfitDict, corpBusinessSummary, rawTableDict)
