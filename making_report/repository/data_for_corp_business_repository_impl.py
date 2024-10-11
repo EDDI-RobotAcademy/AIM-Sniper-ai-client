@@ -1,4 +1,5 @@
-import json, os, zipfile
+import json, os
+import zipfile
 from datetime import datetime, timedelta
 from io import BytesIO
 
@@ -31,7 +32,7 @@ if not openaiApiKey:
 class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
     __instance = None
     # WANTED_CORP_LIST = ["케이티"]
-    WANTED_CORP_LIST = ["SK네트웍스", "삼성전자", "현대자동차", "SK하이닉스", "LG전자", "POSCO홀딩스", "NAVER", "현대모비스", "기아", "LG화학", "삼성물산", "롯데케미칼", "SK이노베이션", "S-Oil", "CJ제일제당", "현대건설", "삼성에스디에스", "LG디스플레이", "아모레퍼시픽", "한화솔루션", "HD현대중공업", "LS", "두산에너빌리티", "SK텔레콤", "케이티", "LG유플러스", "HJ중공업", "삼성전기", "한화에어로스페이스", "효성", "코웨이", "한샘", "신세계", "이마트", "현대백화점", "LG생활건강", "GS리테일", "오뚜기", "농심", "롯데웰푸드", "CJ ENM", "한화", "LG이노텍", "삼성바이오로직스", "셀트리온"]
+    WANTED_CORP_LIST = ["SK네트웍스", "삼성전자", "현대자동차", "SK하이닉스", "LG전자", "POSCO홀딩스", "NAVER", "현대모비스", "기아", "LG화학", "삼성물산", "롯데케미칼", "SK이노베이션", "S-Oil", "CJ제일제당", "현대건설", "삼성에스디에스", "LG디스플레이", "아모레퍼시픽", "한화솔루션", "HD현대중공업", "LS", "SK텔레콤", "케이티", "LG유플러스", "HJ중공업", "삼성전기", "한화에어로스페이스", "효성", "코웨이", "한샘", "신세계", "이마트", "현대백화점", "LG생활건강", "GS리테일", "오뚜기", "농심", "롯데웰푸드", "CJ ENM", "한화", "LG이노텍", "삼성바이오로직스", "셀트리온"]
 
     SEARCH_YEAR_GAP = 1
     WANTED_SEARCH_YEAR = f'{(datetime.today() - timedelta(days=365*SEARCH_YEAR_GAP)).year}0101'
@@ -46,7 +47,6 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
             openai.api_key = openaiApiKey
             cls.__instance.__totalCorpList = dart.get_corp_list()
             cls.__instance.__wantedCorpCodeDict = cls.__instance.getCorpCode()
-            cls.__instance.__wantedReceiptCodeDict = cls.__instance.getCorpReceiptCode()
 
 
         return cls.__instance
@@ -67,7 +67,6 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
             json.dump(dictData, file, ensure_ascii=False, indent=4)
 
     def getCorpCodeDict(self):
-
         return self.__wantedCorpCodeDict
 
     def alarmWrongRegisteredCorpName(self, name, corp):
@@ -105,109 +104,64 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
 
         return corpCodeDict
 
-    def getCorpReceiptCode(self):
-        corpReceiptCodeDict = {}
-        for corpName, corpCode in self.__wantedCorpCodeDict.items():
-            try:
-                corpReportList = dart.filings.search(
-                                    corp_code=corpCode,
-                                    bgn_de=self.WANTED_SEARCH_YEAR,
-                                    pblntf_ty=self.WANTED_SEARCH_DOC
-                                ).report_list
-
-                corpReceiptCode = next((report.rcept_no
-                                        for report in corpReportList
-                                        if ('사업보고서' in report.report_nm) and (r'[첨부정정]' not in report.report_nm))
-                                       , None)
-
-                corpReceiptCodeDict[corpName] = corpReceiptCode
-
-            except Exception as e:
-                print(f"[ERROR] {corpName} -> \n {e}")
-                pass
-
-        return corpReceiptCodeDict
 
 
-    def getWebDriverAboutReport(self, receiptCode):
-        url = f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={receiptCode}"
-        driver = webdriver.Chrome(options=options)
-        driver.get(url=url)
-        return driver
+    def getRawBusinessDataFromDart(self):
+        rawSummaryDict, rawTableDict = {}, {}
 
-    def getContentsFromDriver(self, driver):
-        dartContent = driver.find_element(By.CSS_SELECTOR, "#listTree")
-        return dartContent.find_elements(By.CSS_SELECTOR, "a")
 
-    def getUrlFromWantedContent(self, driver, contentList, wantedContent):
-        url = []
-        for content in contentList:
-            if wantedContent in content.text:
-                content.click()
-                url.append(driver.find_element(By.CSS_SELECTOR, ".viewWrap iframe").get_attribute("src"))
-        return url
 
-    def getTagDataFromRequest(self, wantedContentUrl, wanted_tag):
-        tagDataList = []
-        for url in wantedContentUrl:
-            response = requests.get(url)
-            soup = BeautifulSoup(response.content, "html.parser")
-            tagDataList.extend(soup.find_all(wanted_tag))
+        # [TODD] 사업내용 추출 로직 변경
 
-        return tagDataList
 
-    def getRawDataFromDart(self):
-        rawCorpDataDict = {}
-        for corpName, receiptCode in self.getCorpReceiptCode().items():
-            print(f"* CB_RAW - {corpName}")
-            driver = self.getWebDriverAboutReport(receiptCode)
-            time.sleep(1)
 
-            contentList = self.getContentsFromDriver(driver)
-            wantedContentUrl = self.getUrlFromWantedContent(driver, contentList, "사업의 개요")
+        return rawSummaryDict, rawTableDict
 
-            paragraphList = self.getTagDataFromRequest(wantedContentUrl, "p")
-            combinedParagraph = " ".join([paragraph.get_text().replace("\xa0", " ")
-                                          for paragraph in paragraphList
-                                          if paragraph.get_text() != None])
 
-            rawCorpDataDict[corpName] = combinedParagraph
-
-        self.saveData(rawCorpDataDict, "../data/dart_corp_business/preprocessed_data_v2")
-
-        return rawCorpDataDict
-
-    def changeContentStyle(self, preprocessedData):
-        maxTokenLength = 16385
+    def changeContentStyle(self, businessData):
+        maxTokenLength = 128000
         promptEngineering = f"""
-        사용자 입력 메시지의 내용을 <조건>에 맞춰 5가지 포인트로 정리하라.
+        사용자 입력 메시지의 내용은 한국기업의 사업내용이다. 너는 기업을 전문적으로 분석하는 유능한 분석가이다.
+        모든 <조건>에 맞춰, <구조>과 같은 구조로 한국기업의 사업내용을 요약하라.
 
         <조건>
-        1. 개조식으로 작성할 것.
-        2. bullet point로 작성할 것.
-        3. 800 token 내로 작성을 마무리할 것.
+        1. 개조식으로 작성할 것. 
+            (예시: [BEFORE] 회사는 지속적인 기술 및 서비스에 대한 투자를 통해 핵심 사업의 경쟁력을 강화하고 있습니다. -> [AFTER] 지속적인 기술 및 서비스에 대한 투자를 통해 핵심 사업의 경쟁력을 강화)
+        2. 1500 token 내로 작성을 마무리할 것.
+        3. 첫 문단은 취업준비생들을 위해 요청한 사업내용 요약에 대한 전반적인 총평과 기업 공략 포인트에 대해서 정리해서 기재할 것.
+        4. 첫 문단 이후에 요청한 사업내용 요약을 기재할 것.
+        
+        <구조>
+        1. 글을 HTML 형식으로 요약할것
+        2. 목록은 <ul>과 <li> 태그로 표현할 것.
+        3. 태그 사이에 띄어쓰기('\n') 없이 한 줄로 표현할 것.
+        예시:
+        <p>첫 문단(전반적인 총평과 기업 공략 포인트)</p><ul><li>상위 목록 항목 1<ul><li>하위 목록 항목 1.1</li><li>하위 목록 항목 1.2</li></ul></li><li>상위 목록 항목 2<ul><li>하위 목록 항목 2.1</li><li>하위 목록 항목 2.2</li></ul></li></ul>
         """
 
-        changedContextDict = {}
-        for corpName, doc in preprocessedData.items():
-            print(f"* CB_AI - {corpName}")
-            if len(doc) >= maxTokenLength:
-                print(f"사업내용 토큰 수 초과 -> {corpName}")
-                continue
+        with openai.OpenAI() as client:
+            changedContextDict = {}
+            for corpName, doc in businessData.items():
+                print(f"* CB_AI - {corpName}")
+                if len(doc) >= maxTokenLength:
+                    print(f"사업내용 토큰 수 초과 -> {corpName}")
+                    continue
 
-            messages = [
-                {"role": "system", "content": promptEngineering},
-                {"role": "user", "content": doc}
-            ]
+                messages = [
+                    {"role": "system", "content": promptEngineering},
+                    {"role": "user", "content": doc}
+                ]
 
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=messages,
-                max_tokens=800,
-                temperature=0.7,
-            )
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=messages,
+                    max_tokens=1500,     # <= 16,384
+                    temperature=0.8,
+                )
 
-            changedContextDict[corpName] = {"businessSummary": response.choices[0]['message']['content']}
+                changedContextDict[corpName] = {
+                    "businessSummary": response.choices[0].message.content
+                }
 
         self.saveData(changedContextDict, "../data/dart_corp_business/preprocessed_data_v3")
 

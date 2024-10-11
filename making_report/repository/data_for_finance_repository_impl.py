@@ -178,8 +178,8 @@ class DataForFinanceRepositoryImpl(DataForFinanceRepository):
                 pass
 
             financialDataDict[corpName] = {"revenueTrend": revenueTrend,
-                                        "profitTrend": profitTrend,
-                                        "ownersCapital": ownersCapital}
+                                            "profitTrend": profitTrend,
+                                            "ownersCapital": ownersCapital}
 
         self.saveData(financialDataDict, "../data/dart_financial_statements/preprocessed_data_v1")
 
