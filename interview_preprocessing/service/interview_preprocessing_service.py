@@ -67,6 +67,16 @@ class InterviewPreprocessingService(ABC):
     @abstractmethod
     def filterInterviewDataAndSave(self, interviewList, saveFilePath):
         pass
+
     @abstractmethod
-    def getLLMScore(self, inputFilePath):
+    def getAnswerScoreByLLM(self, inputFilePath):
         pass
+
+    @abstractmethod
+    def getTechKeywordByLLM(self):
+        pass
+
+    @abstractmethod
+    def getTechAnswerScoreByLLM(self):
+        pass
+
