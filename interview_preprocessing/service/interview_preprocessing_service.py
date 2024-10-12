@@ -77,6 +77,10 @@ class InterviewPreprocessingService(ABC):
         pass
 
     @abstractmethod
-    def getTechAnswerScoreByLLM(self):
+    def getGeneratedQuestionByRuleBase(self, inputFilePath):
+        pass
+
+    @abstractmethod
+    def getTechAnswerAndScoreByLLM(self, inputFilePath):
         pass
 
