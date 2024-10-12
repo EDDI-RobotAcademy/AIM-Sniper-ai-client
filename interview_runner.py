@@ -105,6 +105,14 @@ def comparisonRatioResultToCsv(filePath):
     labeledInterviewList = interview.readFile(filePath)
     interview.comparisonResultToCsv(labeledInterviewList)
 
+def getTechAnswerAndScore():
+    interview.getTechAnswerScoreByLLM()
+
+def getTechKeyword():
+    interview.getTechKeywordByLLM()
+
+def getTechQuestions(keywordFilePath):
+    interview.getGeneratedQuestionByRuleBase(keywordFilePath)
 
 if __name__ == '__main__':
     # rawFilePath = 'assets\\json_data_raw\\'
@@ -132,7 +140,16 @@ if __name__ == '__main__':
     sessionDataPath = 'assets\\json_data_session'
     # 테스트용 path
     # sessionDataPath = os.path.join(sessionDataPath, 'data_set_1\\session_1.json')
-    scoreAnswer(sessionDataPath)
+    # scoreAnswer(sessionDataPath)
+    # getTechAnswerAndScore()
+
+    # LLM 기반 키워드 추출
+    # getTechKeyword()
+
+    # 키워드 기반 기술면접 질문 생성
+    keywordFilePath = "assets\\json_data_job_keyword\\job_keyword_final.json"
+    getTechQuestions(keywordFilePath)
+
 
     # LLM 의도 라벨링
     # labeledInputFile = os.path.join(labeledFilePath, 'sample_intent_labeled_1091_qualitative_eval.json')

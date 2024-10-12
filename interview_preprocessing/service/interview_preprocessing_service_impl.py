@@ -11,6 +11,8 @@ from interview_preprocessing.repository.interview_preprocessing_corpus_repositor
 from interview_preprocessing.repository.interview_preprocessing_file_repository_impl import InterviewPreprocessingFileRepositoryImpl
 from interview_preprocessing.repository.interview_preprocessing_intent_repository_impl import \
     InterviewPreprocessingIntentRepositoryImpl
+from interview_preprocessing.repository.interview_preprocessing_keyword_repository_impl import \
+    InterviewPreprocessingKeywordRepositoryImpl
 from interview_preprocessing.repository.interview_preprocessing_openai_repository_impl import \
     InterviewPreprocessingOpenAIRepositoryImpl
 from interview_preprocessing.service.interview_preprocessing_service import InterviewPreprocessingService
@@ -25,6 +27,7 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
             cls.__instance.__interviewPreprocessingCorpusRepository = InterviewPreprocessingCorpusRepositoryImpl.getInstance()
             cls.__instance.__interviewPreprocessingIntentRepository = InterviewPreprocessingIntentRepositoryImpl().getInstance()
             cls.__instance.__interviewPreprocessingOpenAIRepository =InterviewPreprocessingOpenAIRepositoryImpl().getInstance()
+            cls.__instance.__interviewPreprocessingKeywordRepository = InterviewPreprocessingKeywordRepositoryImpl().getInstance()
         return cls.__instance
 
     @classmethod
@@ -219,7 +222,7 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         saveFilePath = os.path.join(saveFilePath, f'filtered_data_{len(filteredInterviewList)}.json')
         self.__interviewPreprocessingFileRepository.saveFile(saveFilePath, filteredInterviewList)
 
-    def getLLMScore(self, inputFilePath):
+    def getAnswerScoreByLLM(self, inputFilePath):
         interviewList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)
         if '.json' in inputFilePath:
             interviewList = [interviewList]
@@ -240,9 +243,31 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
             saveFilePath = os.path.join(savePath, f'session_scored_{(idx+1)}.json')
             self.__interviewPreprocessingFileRepository.saveFile(saveFilePath, interviews)
 
+    def getTechKeywordByLLM(self):
+        roles = ['Backend 엔지니어', 'Frontend 엔지니어', 'AI 엔지니어', 'Infra 엔지니어', 'DevOps 엔지니어']
+        result = {}
+        for role in tqdm(roles, total=len(roles), desc='get keyword'):
+            keywords = self.__interviewPreprocessingOpenAIRepository.getTechKeyword(role)
+            keywords = keywords.replace('\"', '').strip().split('<s>')
+            result[role.replace(' 엔지니어', '')] = keywords
+        saveFilePath = "assets\\json_data_job_keyword"
+        os.makedirs(saveFilePath, exist_ok=True)
+        self.__interviewPreprocessingFileRepository.saveFile(os.path.join(saveFilePath, 'job_keyword_final.json'), result)
 
+    def getTechAnswerScoreByLLM(self):
+        answer = self.__interviewPreprocessingOpenAIRepository.getTechAnswer()
+        print(answer)
 
+    def getGeneratedQuestionByRuleBase(self, inputFilePath):
+        keywordList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)
+        resultList = []
+        for job, keywords in tqdm(keywordList.items(), total=len(keywordList), desc='generate questions'):
+            for keyword in keywords:
+                questionList = self.__interviewPreprocessingKeywordRepository.generateQuestion(keyword)
+                for question in questionList:
+                    resultList.append({'question': question, 'job': job})
 
-
-
-
+        savePath = 'assets\\json_data_tech_question'
+        os.makedirs(savePath, exist_ok=True)
+        savePath = os.path.join(savePath, f'tech_question_{len(resultList)}.json')
+        self.__interviewPreprocessingFileRepository.saveFile(savePath, resultList)
