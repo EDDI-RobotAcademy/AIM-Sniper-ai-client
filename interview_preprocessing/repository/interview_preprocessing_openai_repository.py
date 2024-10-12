@@ -14,9 +14,5 @@ class InterviewPreprocessingOpenAIRepository(ABC):
         pass
 
     @abstractmethod
-    def getTechAnswer(self, question, score):
-        pass
-
-    @abstractmethod
-    def createTechSession(self):
+    def getTechAnswer(self, question, score, job):
         pass

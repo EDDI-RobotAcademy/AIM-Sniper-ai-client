@@ -2,6 +2,7 @@ import csv
 import itertools
 import json
 import os
+import random
 
 import pandas as pd
 from tqdm import tqdm
@@ -254,10 +255,6 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         os.makedirs(saveFilePath, exist_ok=True)
         self.__interviewPreprocessingFileRepository.saveFile(os.path.join(saveFilePath, 'job_keyword_final.json'), result)
 
-    def getTechAnswerScoreByLLM(self):
-        answer = self.__interviewPreprocessingOpenAIRepository.getTechAnswer()
-        print(answer)
-
     def getGeneratedQuestionByRuleBase(self, inputFilePath):
         keywordList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)
         resultList = []
@@ -265,9 +262,27 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
             for keyword in keywords:
                 questionList = self.__interviewPreprocessingKeywordRepository.generateQuestion(keyword)
                 for question in questionList:
-                    resultList.append({'question': question, 'job': job})
+                    resultList.append({'question': question, 'job': job, 'tech_keyword': keyword})
 
         savePath = 'assets\\json_data_tech_question'
         os.makedirs(savePath, exist_ok=True)
         savePath = os.path.join(savePath, f'tech_question_{len(resultList)}.json')
         self.__interviewPreprocessingFileRepository.saveFile(savePath, resultList)
+
+    def getTechAnswerAndScoreByLLM(self, inputFilePath):
+        questionList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)
+        for data in questionList:
+            question = data.get('question')
+            job = data.get('job')
+            score = random.randint(10, 88)
+            answerList = self.__interviewPreprocessingOpenAIRepository.getTechAnswer(question, score, job)
+            answerList = answerList.split('<s>')
+            data['answer'] = answerList[0].replace('answer:', '').replace('\"', '').strip()
+            data['feedback'] = answerList[1].replace('feedback:', '').replace('\"', '').strip()
+            data['alternative_answer'] = answerList[2].replace('example:', '').replace('\"', '').strip()
+            data['score'] = str(score)+"점"
+
+        savePath = 'assets\\json_data_tech_answered'
+        os.makedirs(savePath, exist_ok=True)
+        savePath = os.path.join(savePath, f'tech_data_answered_{len(questionList)}.json')
+        self.__interviewPreprocessingFileRepository.saveFile(savePath, questionList)
