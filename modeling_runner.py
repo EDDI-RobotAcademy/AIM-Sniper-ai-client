@@ -1,9 +1,9 @@
 import os
 from modeling.train import training
-from modeling.config import loginToWandb, set_seed, set_config
+from modeling.config import login_to_wandb, set_seed, set_config
 
 if __name__ == '__main__':
-    root_dir = os.path.abspath("./drive/MyDrive/LoRA_tuning")
+    root_dir = os.path.abspath("../drive/MyDrive/LoRA_tuning")
     input_dir = os.path.join(root_dir, "inputs")
 
     # 반드시 경로 알잘딱 바꿔주기
@@ -12,7 +12,7 @@ if __name__ == '__main__':
     os.makedirs(output_dir, exist_ok=True)
 
     cache_dir = os.path.join(root_dir, 'cache')
-    loginToWandb('TEST')
+    login_to_wandb('TEST')
     set_seed(seed=42)
 
     config = set_config(model_name, cache_dir, input_dir, output_dir)
