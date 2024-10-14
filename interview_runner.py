@@ -1,7 +1,5 @@
 import random
-import numpy as np
 from tqdm import tqdm
-from datetime import datetime
 import os
 
 from interview_preprocessing.service.interview_preprocessing_service_impl import InterviewPreprocessingServiceImpl
@@ -138,6 +136,7 @@ if __name__ == '__main__':
 
     # 채점 및 피드백
     sessionDataPath = 'assets\\json_data_session'
+
     # 테스트용 path
     # sessionDataPath = os.path.join(sessionDataPath, 'data_set_1\\session_1.json')
     # scoreAnswer(sessionDataPath)
