@@ -1,20 +1,11 @@
 import json, os
-import zipfile
 from datetime import datetime, timedelta
-from io import BytesIO
 
 from dotenv import load_dotenv
 
 import dart_fss as dart
 import openai
-import requests
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-options = Options()
-options.add_argument("--headless=new")
-import time
 
 from making_report.repository.data_for_corp_business_repository import DataForCorpBusinessRepository
 
@@ -31,7 +22,6 @@ if not openaiApiKey:
 
 class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
     __instance = None
-    # WANTED_CORP_LIST = ["케이티"]
     WANTED_CORP_LIST = ["SK네트웍스", "삼성전자", "현대자동차", "SK하이닉스", "LG전자", "POSCO홀딩스", "NAVER", "현대모비스", "기아", "LG화학", "삼성물산", "롯데케미칼", "SK이노베이션", "S-Oil", "CJ제일제당", "현대건설", "삼성에스디에스", "LG디스플레이", "아모레퍼시픽", "한화솔루션", "HD현대중공업", "LS", "SK텔레콤", "케이티", "LG유플러스", "HJ중공업", "삼성전기", "한화에어로스페이스", "효성", "코웨이", "한샘", "신세계", "이마트", "현대백화점", "LG생활건강", "GS리테일", "오뚜기", "농심", "롯데웰푸드", "CJ ENM", "한화", "LG이노텍", "삼성바이오로직스", "셀트리온"]
 
     SEARCH_YEAR_GAP = 1
@@ -104,16 +94,19 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
 
         return corpCodeDict
 
-
-
     def getRawBusinessDataFromDart(self):
         rawSummaryDict, rawTableDict = {}, {}
+        for corpName in self.WANTED_CORP_LIST:
+            filePath = "../assets/company_data/"
+            with open(f"{filePath}{corpName}.html", "r", encoding="utf-8-sig") as f:
+                companyHtml = f.read()
+            companySoup = BeautifulSoup(companyHtml, "html.parser")
 
-
-
-        # [TODD] 사업내용 추출 로직 변경
-
-
+            companyData = []
+            for tag in companySoup.find_all("h1"):
+                companyData.append(tag.find_next())
+            rawSummaryDict[corpName] = str(companyData[0])
+            rawTableDict[corpName] = {"revenueTable": str(companyData[1])}
 
         return rawSummaryDict, rawTableDict
 
