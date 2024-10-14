@@ -5,7 +5,7 @@ import torch
 import wandb
 
 
-def loginToWandb(project_name):
+def login_to_wandb(project_name):
     wandb.login()
     os.environ['WANDB_PROJECT'] = project_name  # wandb project 이름 설정
 
