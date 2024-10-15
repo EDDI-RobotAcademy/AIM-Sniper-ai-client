@@ -94,7 +94,7 @@ def createSessionData(filePath, iteration):
             interview.saveFile(sessionData, os.path.join(savePath, f'session_{j+1}.json'), silent=True)
 
 def scoreAnswer(sessionDataPath):
-    interview.getLLMScore(sessionDataPath)
+    interview.getAnswerScoreByLLM(sessionDataPath)
 
 def getLLMIntent(inputFile, labeledFilePath):
     interview.getLLMIntent(inputFile, labeledFilePath)
@@ -131,15 +131,17 @@ if __name__ == '__main__':
     # saveSampledLabeledInterview(totalLabeledFile, labeledFilePath)
 
     # 전체 데이터로 세션 만들기
-    finalIntentPath = os.path.join(labeledFilePath, 'intent_labeled_not_null_21474.json')
-    # createSessionData(finalIntentPath, 2)
+    # finalIntentPath = os.path.join(labeledFilePath, 'intent_labeled_not_null_21474.json')
+    # createSessionData(finalIntentPath, 3)
 
     # 채점 및 피드백
-    sessionDataPath = 'assets\\json_data_session'
+    sessionDataPath = 'assets\\json_data_session\\data_set_1' #  (total 3578)
+    # sessionDataPath = 'assets\\json_data_session\\data_set_2' # start : 3579 (total 3578) +1 옆에 + 3578해주기
+    # sessionDataPath = 'assets\\json_data_session\\data_set_3'
 
     # 테스트용 path
     # sessionDataPath = os.path.join(sessionDataPath, 'data_set_1\\session_1.json')
-    # scoreAnswer(sessionDataPath)
+    scoreAnswer(sessionDataPath)
     # getTechAnswerAndScore()
 
     # LLM 기반 키워드 추출

@@ -227,22 +227,27 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         interviewList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)
         if '.json' in inputFilePath:
             interviewList = [interviewList]
+        print('length of data : ', len(interviewList))
+        for idx, interviews in tqdm(enumerate(interviewList), total=len(interviewList), desc='tagging score'):
+            try:
+                for interview in interviews:
+                    question = interview.get('question')
+                    intent = interview.get('rule_based_intent')
+                    answer = interview.get('answer')
+                    result = self.__interviewPreprocessingOpenAIRepository.scoreAnswer(question, intent, answer)
+                    resultList = result.split('<s>')
+                    interview['score'] = resultList[0].replace('score:', '').replace('\"', '').strip()
+                    interview['feedback'] = resultList[1].replace('feedback:', '').replace('\"', '').strip()
+                    interview['alternative_answer'] = resultList[2].replace('example:', '').replace('\"', '').strip()
 
-        for idx, interviews in enumerate(interviewList):
-            for interview in interviews:
-                question = interview.get('question')
-                intent = interview.get('rule_based_intent')
-                answer = interview.get('answer')
-                result = self.__interviewPreprocessingOpenAIRepository.scoreAnswer(question, intent, answer)
-                resultList = result.split('<s>')
-                interview['score'] = resultList[0].replace('score:', '').replace('\"', '').strip()
-                interview['feedback'] = resultList[1].replace('feedback:', '').replace('\"', '').strip()
-                interview['alternative_answer'] = resultList[2].replace('example:', '').replace('\"', '').strip()
+            except Exception as e:
+                interviewList.remove(interviews)
+                print(f"Error processing interview, removed from list: {e}")
 
             savePath = 'assets\\json_data_scored\\'
             os.makedirs(savePath, exist_ok=True)
             saveFilePath = os.path.join(savePath, f'session_scored_{(idx+1)}.json')
-            self.__interviewPreprocessingFileRepository.saveFile(saveFilePath, interviews)
+            self.__interviewPreprocessingFileRepository.saveFile(saveFilePath, interviews, silent=True)
 
     def getTechKeywordByLLM(self):
         roles = ['Backend 엔지니어', 'Frontend 엔지니어', 'AI 엔지니어', 'Infra 엔지니어', 'DevOps 엔지니어']

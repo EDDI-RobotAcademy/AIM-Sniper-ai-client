@@ -69,7 +69,7 @@ class InterviewPreprocessingOpenAIRepositoryImpl(InterviewPreprocessingOpenAIRep
                 """[Intent] """ + intent +
                 """[Answer] """ + answer +
                 """[Note]
-                1. [Answer]는 면접관 [Intent]를 파악하기 위한 [Question]에 대한 면접 대상자의 답변이야.
+                1. [Answer]는 면접관이 면접 대상자의 [Intent]를 파악하기 위한 [Question]에 대한 면접 대상자의 답변이야.
                 2. Answer가 얼마나 question에 대해 잘 대답했는지를 1~100점 사이에서 평가해줘. 
                 3. 답변에 대한 feedback과 네가 100점이라고 생각하는 Answer를 제공해줘.
                 4. output은 "score:~점<s>feedback:피드백<s>example:100점으로 고친 답변" 형식으로 출력해줘. 
