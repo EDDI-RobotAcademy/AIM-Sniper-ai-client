@@ -1,13 +1,10 @@
 from polyglot_temp.repository.polyglot_repository import PolyglotRepository
 
-import transformers
-from transformers import TrainingArguments, Trainer, AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
-from torch.utils.data import Dataset
-from peft import LoraConfig, get_peft_model, PeftModel
-from dataclasses import dataclass
-import json, os, random, logging, math, copy
-import numpy as np
+from peft import PeftModel
+
+import os
 
 class PolyglotRepositoryImpl(PolyglotRepository):
     __instance = None
@@ -64,6 +61,23 @@ class PolyglotRepositoryImpl(PolyglotRepository):
             cls.__instance = cls()
 
         return cls.__instance
+
+    def downloadPretrainedModel(self):
+        cacheDir = os.path.join("models", "cache")  # 원하는 경로로 변경 가능
+
+        # 모델 다운로드
+        model = AutoModelForCausalLM.from_pretrained(
+            "EleutherAI/polyglot-ko-1.3b",
+            cache_dir=cacheDir,
+            trust_remote_code=True
+        )
+
+        # 토크나이저 다운로드
+        tokenizer = AutoTokenizer.from_pretrained(
+            "EleutherAI/polyglot-ko-1.3b",
+            cache_dir=cacheDir,
+            trust_remote_code=True
+        )
 
     def generateQuestion(self, userAnswer, nextIntent):
         prompt = (
