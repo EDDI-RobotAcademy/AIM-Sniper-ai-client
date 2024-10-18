@@ -1,6 +1,9 @@
 import os
 import sys
 
+from polyglot_temp.service.polyglot_service_impl import PolyglotServiceImpl
+from polyglot_temp.service.request.polyglot_request import PolyglotRequest
+from polyglot_temp.service.response.polyglot_response import PolyglotResponse
 from test.service.request.test_request import TestRequest
 from test.service.response.test_response import TestResponse
 from test.service.test_service_impl import TestServiceImpl
@@ -37,8 +40,29 @@ class UserDefinedProtocolRegister:
             testService.printTestWord
         )
 
+    @staticmethod
+    def registerPolyglotProtocol():
+        customProtocolService = CustomProtocolServiceImpl.getInstance()
+        polyglotService = PolyglotServiceImpl.getInstance()
 
+        requestClassMapInstance = RequestClassMap.getInstance()
+        requestClassMapInstance.addRequestClass(
+            UserDefinedProtocolNumber.POLYGLOT,
+            PolyglotRequest
+        )
+
+        responseClassMapInstance = ResponseClassMap.getInstance()
+        responseClassMapInstance.addResponseClass(
+            UserDefinedProtocolNumber.POLYGLOT,
+            PolyglotResponse
+        )
+
+        customProtocolService.registerCustomProtocol(
+            UserDefinedProtocolNumber.POLYGLOT,
+            polyglotService.generateNextQuestion
+        )
 
     @staticmethod
     def registerUserDefinedProtocol():
         UserDefinedProtocolRegister.registerTestProtocol()
+        UserDefinedProtocolRegister.registerPolyglotProtocol()
