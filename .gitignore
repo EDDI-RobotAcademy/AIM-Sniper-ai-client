@@ -306,3 +306,6 @@ pyrightconfig.json
 
 # exclude *.nltk_data
 assets/nltk_data/
+
+# exclude *.models
+/models/
