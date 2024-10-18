@@ -1,3 +1,5 @@
+import os
+
 from polyglot_temp.repository.polyglot_repository_impl import PolyglotRepositoryImpl
 from polyglot_temp.service.polyglot_service import PolyglotService
 
@@ -20,6 +22,10 @@ class PolyglotServiceImpl(PolyglotService):
         return cls.__instance
 
     async def generateNextQuestion(self, *arg, **kwargs):
+        cacheDir = os.path.join("models", "cache")
+        if not os.path.exists(cacheDir):
+            self.__polyglotRepository.downloadPretrainedModel()
+
         userAnswer = arg[0]
         nextIntent = arg[1]
 
