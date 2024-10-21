@@ -40,5 +40,5 @@ class PolyglotServiceImpl(PolyglotService):
         userAnswer = arg[1]
         intent = arg[2]
 
-        return self.__polyglotRepository.generateQuestion(question, userAnswer, intent)
+        return self.__polyglotRepository.scoreUserAnswer(question, userAnswer, intent)
 
