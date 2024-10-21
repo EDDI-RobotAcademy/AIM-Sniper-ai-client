@@ -9,3 +9,7 @@ class PolyglotRepository(ABC):
     @abstractmethod
     def generateQuestion(self, userAnswer, nextIntent):
         pass
+
+    @abstractmethod
+    def scoreUserAnswer(self, question, userAnswer, intent):
+        pass

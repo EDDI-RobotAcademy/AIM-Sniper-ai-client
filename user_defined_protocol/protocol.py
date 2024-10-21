@@ -5,6 +5,7 @@ class UserDefinedProtocolNumber(Enum):
     # 예약된 정보 (1, 2, 11, 12, 13, 21) 을 제외하고 사용하도록 함
     TEST = 6
     POLYGLOT = 7
+    POLYGLOT_SCORE = 8
 
     @classmethod
     def hasValue(cls, value):

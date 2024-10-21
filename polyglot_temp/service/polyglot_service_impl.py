@@ -31,3 +31,14 @@ class PolyglotServiceImpl(PolyglotService):
 
         return self.__polyglotRepository.generateQuestion(userAnswer, nextIntent)
 
+    async def scoreUserAnswer(self, *arg, **kwargs):
+        cacheDir = os.path.join("models", "cache")
+        if not os.path.exists(cacheDir):
+            self.__polyglotRepository.downloadPretrainedModel()
+
+        question = arg[0]
+        userAnswer = arg[1]
+        intent = arg[2]
+
+        return self.__polyglotRepository.generateQuestion(question, userAnswer, intent)
+
