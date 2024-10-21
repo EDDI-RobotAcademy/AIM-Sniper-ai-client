@@ -45,18 +45,18 @@ class PolyglotRepositoryImpl(PolyglotRepository):
     tokenizer.model_max_length = config['max_token_length']
 
     # lora adapter 변화랑 model parameter에 병합 - merge_and_unload() 안해도 되지만, 그러면 추론 속도가 느림
-    interviewModel = PeftModel.from_pretrained(model, loraAdapterInterviewPath)
-    interviewModel = interviewModel.merge_and_unload()
-
-    interviewModel.eval()
-    interviewModel.to(device)
+    # interviewModel = PeftModel.from_pretrained(model, loraAdapterInterviewPath)
+    # interviewModel = interviewModel.merge_and_unload()
+    #
+    # interviewModel.eval()
+    # interviewModel.to(device)
 
     # lora adapter 변화랑 model parameter에 병합 - merge_and_unload() 안해도 되지만, 그러면 추론 속도가 느림
-    scoreModel = PeftModel.from_pretrained(model, loraAdapterScorePath)
-    scoreModel = scoreModel.merge_and_unload()
-
-    scoreModel.eval()
-    scoreModel.to(device)
+    # scoreModel = PeftModel.from_pretrained(model, loraAdapterScorePath)
+    # scoreModel = scoreModel.merge_and_unload()
+    #
+    # scoreModel.eval()
+    # scoreModel.to(device)
 
     def __new__(cls):
         if cls.__instance is None:
@@ -101,8 +101,15 @@ class PolyglotRepositoryImpl(PolyglotRepository):
 
         input = self.tokenizer([source], return_tensors="pt", return_token_type_ids=False).to(self.device)
         inputLength = len(source)
+
+        interviewModel = PeftModel.from_pretrained(self.model, self.loraAdapterInterviewPath)
+        interviewModel = interviewModel.merge_and_unload()
+
+        interviewModel.eval()
+        interviewModel.to(self.device)
+
         with torch.no_grad():
-            output = self.interviewModel.generate(**input, max_new_tokens=200)
+            output = interviewModel.generate(**input, max_new_tokens=200)
             output = self.tokenizer.decode(output[0], skip_special_tokens=True)
             output = output[inputLength:]
 
@@ -122,10 +129,16 @@ class PolyglotRepositoryImpl(PolyglotRepository):
         source = prompt.format_map(dict(question=question, intent=intent, answer=userAnswer))
         input = self.tokenizer([source], return_tensors="pt", return_token_type_ids=False).to(self.device)
         inputLength = len(source)
-        with torch.no_grad():
-            output = self.scoreModel.generate(**input, max_new_tokens=1024)
-            output = self.tokenizer.decode(output[0], skip_special_tokens=False)
-            output = output.replace('</s>', '').replace('<pad>', '').replace('<mask>', '')
-            output = output[inputLength:]
 
-        return {"score result": output}
+        scoreModel = PeftModel.from_pretrained(self.model, self.loraAdapterScorePath)
+        scoreModel = scoreModel.merge_and_unload()
+
+        scoreModel.eval()
+        scoreModel.to(self.device)
+        with torch.no_grad():
+            output = scoreModel.generate(**input, max_new_tokens=1024)
+            output = self.tokenizer.decode(output[0], skip_special_tokens=True)
+            output = output[inputLength:]
+        result = output
+
+        return {"score result": result}
