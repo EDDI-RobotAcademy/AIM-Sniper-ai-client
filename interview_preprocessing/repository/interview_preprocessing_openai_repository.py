@@ -16,3 +16,15 @@ class InterviewPreprocessingOpenAIRepository(ABC):
     @abstractmethod
     def getTechAnswer(self, question, score, job):
         pass
+
+    @abstractmethod
+    def generateQAS(self, beforeQuestion, beforeAnswer, intent):
+        pass
+
+    @abstractmethod
+    def generateQASUnder65(self, beforeQuestion, beforeAnswer, intent):
+        pass
+
+    @abstractmethod
+    def generateQASUnder50(self, beforeQuestion, beforeAnswer, intent):
+        pass
