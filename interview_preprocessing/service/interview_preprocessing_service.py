@@ -84,3 +84,7 @@ class InterviewPreprocessingService(ABC):
     def getTechAnswerAndScoreByLLM(self, inputFilePath):
         pass
 
+    @abstractmethod
+    def getQASByLLM(self, inputFilePath):
+        pass
+

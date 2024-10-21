@@ -117,3 +117,69 @@ class InterviewPreprocessingOpenAIRepositoryImpl(InterviewPreprocessingOpenAIRep
         )
         return response.choices[0].message.content.strip()
 
+    def generateQAS(self, beforeQuestion, beforeAnswer, intent):
+        response = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": f"너는 면접을 진행하는 면접관이야."},
+                {"role": "user",
+                 "content":
+                 f"""이전 질문: "{beforeQuestion}"
+                     이전 답변: "{beforeAnswer}"
+                     [Note]
+                     1. 이전 답변은 면접자가 이전 질문에 답변한 내용이야.
+                     2. 이전 질문과 유사하지 않고, 면접자의 "{intent}"을 파악할 수 있는 다음 면접 질문을 생성하고, 그 질문에 대한 예상 답변까지도 생성하고 그 답변에 대해 0~100점으로 채점하고, 답변에 대한 피드백도 함께 알려줘.
+                        3. 질문 생성시 면접자의 이전 답변을 참고하여 만들어줘.
+                     3. 질문 생성시 면접자의 이전 답변을 참고해서 만들어줘.
+                     4. 질문, 예상 답변, 피드백은 각각 3문장으로 생성해줘. 
+                     5. output은 "question:너가 생성한 질문<s>answer:질문에 대한 예상 답변<s>score:~점<s>feedback:답변에 대한 피드백"처럼 각각을 "<s>"로 분리하여 생성해줘.
+                  """
+                 }
+            ]
+        )
+        return response.choices[0].message.content.strip()
+
+    def generateQASUnder65(self, beforeQuestion, beforeAnswer, intent):
+        response = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": f"너는 면접을 진행하는 면접관이야."},
+                {"role": "user",
+                 "content":
+                    f"""이전 질문: "{beforeQuestion}"
+                        이전 답변: "{beforeAnswer}"
+                        [Note]
+                        1. 이전 답변은 면접자가 이전 질문에 답변한 내용이야.
+                        2. 이전 질문과 유사하지 않고, 면접자의 "{intent}"을 파악할 수 있는 다음 면접 질문을 생성하고, 그 질문에 대한 예상 답변까지도 생성하고 그 답변에 대해 0~100점으로 채점하고, 답변에 대한 피드백도 함께 알려줘.
+                        3. 질문 생성시 면접자의 이전 답변을 참고하여 만들어줘.
+                        4. 답변에 대한 채점 점수가 65점 정도로 나오도록 조금 애매한 답변을 생성해봐.
+                        5. 질문, 예상 답변, 피드백은 각각 3문장으로 생성해줘. 
+                        6. output은 "question:너가 생성한 질문<s>answer:질문에 대한 예상 답변<s>score:~점<s>feedback:답변에 대한 피드백"처럼 각각을 "<s>"로 분리하여 생성해줘.
+                     """
+                 }
+            ]
+        )
+        return response.choices[0].message.content.strip()
+
+    def generateQASUnder50(self, beforeQuestion, beforeAnswer, intent):
+        response = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": f"너는 면접을 진행하는 면접관이야."},
+                {"role": "user",
+                 "content":
+                    f"""이전 질문: "{beforeQuestion}"
+                        이전 답변: "{beforeAnswer}"
+                        [Note]
+                        1. 이전 답변은 면접자가 이전 질문에 답변한 내용이야.
+                        2. 이전 질문과 유사하지 않고, 면접자의 "{intent}"을 파악할 수 있는 다음 면접 질문을 생성하고, 그 질문에 대한 예상 답변까지도 생성하고 그 답변에 대해 0~100점으로 채점하고, 답변에 대한 피드백도 함께 알려줘.
+                        3. 질문 생성시 면접자의 이전 답변을 참고하여 만들어줘.
+                        4. 답변에 대한 채점 점수가 50점 미만으로 나오도록 조금 잘못된 답변을 생성해봐.
+                        5. 질문, 예상 답변, 피드백은 각각 3문장으로 생성해줘. 
+                        6. output은 "question:너가 생성한 질문<s>answer:질문에 대한 예상 답변<s>score:~점<s>feedback:답변에 대한 피드백"처럼 각각을 "<s>"로 분리하여 생성해줘.
+                     """
+                 }
+            ]
+        )
+        return response.choices[0].message.content.strip()
+

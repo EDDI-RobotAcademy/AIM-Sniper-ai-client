@@ -112,6 +112,9 @@ def getTechQuestions(keywordFilePath):
 def getTechAnswerAndScore(techQuestionFilePath):
     interview.getTechAnswerAndScoreByLLM(techQuestionFilePath)
 
+def getQASData(sessionDataPath):
+    interview.getQASByLLM(sessionDataPath)
+
 if __name__ == '__main__':
     # rawFilePath = 'assets\\json_data_raw\\'
     # concatenatedFilePath = 'assets\\json_data_concatenated\\'
@@ -135,13 +138,12 @@ if __name__ == '__main__':
     # createSessionData(finalIntentPath, 3)
 
     # 채점 및 피드백
-    sessionDataPath = 'assets\\json_data_session\\data_set_1' #  (total 3578)
+    # sessionDataPath = 'assets\\json_data_session\\data_set_1' #  (total 3578)
     # sessionDataPath = 'assets\\json_data_session\\data_set_2' # start : 3579 (total 3578) +1 옆에 + 3578해주기
     # sessionDataPath = 'assets\\json_data_session\\data_set_3'
-
-    # 테스트용 path
-    # sessionDataPath = os.path.join(sessionDataPath, 'data_set_1\\session_1.json')
-    scoreAnswer(sessionDataPath)
+    sessionDataPath = 'assets\\json_data_session\\'
+    getQASData(sessionDataPath)
+    # scoreAnswer(sessionDataPath)
     # getTechAnswerAndScore()
 
     # LLM 기반 키워드 추출
