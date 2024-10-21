@@ -123,9 +123,9 @@ class PolyglotRepositoryImpl(PolyglotRepository):
         input = self.tokenizer([source], return_tensors="pt", return_token_type_ids=False).to(self.device)
         inputLength = len(source)
         with torch.no_grad():
-            output = self.interviewModel.generate(**input, max_new_tokens=200)
-            output = self.tokenizer.decode(output[0], skip_special_tokens=True)
+            output = self.scoreModel.generate(**input, max_new_tokens=1024)
+            output = self.tokenizer.decode(output[0], skip_special_tokens=False)
+            output = output.replace('</s>', '').replace('<pad>', '').replace('<mask>', '')
             output = output[inputLength:]
-            score_result = output.split('<s>')
 
-        return {"score result": score_result}
+        return {"score result": output}
