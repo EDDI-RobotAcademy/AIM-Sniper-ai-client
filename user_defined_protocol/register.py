@@ -1,6 +1,9 @@
 import os
 import sys
 
+from making_report.service.making_report_service_impl import MakingReportServiceImpl
+from making_report.service.request.making_report_request import MakingReportRequest
+from making_report.service.response.making_report_response import MakingReportResponse
 from polyglot_temp.service.polyglot_service_impl import PolyglotServiceImpl
 from polyglot_temp.service.request.polyglot_request import PolyglotRequest
 from polyglot_temp.service.response.polyglot_response import PolyglotResponse
@@ -87,7 +90,54 @@ class UserDefinedProtocolRegister:
         )
 
     @staticmethod
+    def registerReportMakingProtocol():
+        customProtocolService = CustomProtocolServiceImpl.getInstance()
+        reportService = MakingReportServiceImpl.getInstance()
+
+        requestClassMapInstance = RequestClassMap.getInstance()
+        requestClassMapInstance.addRequestClass(
+            UserDefinedProtocolNumber.REPORT_MAKING,
+            MakingReportRequest
+        )
+
+        responseClassMapInstance = ResponseClassMap.getInstance()
+        responseClassMapInstance.addResponseClass(
+            UserDefinedProtocolNumber.REPORT_MAKING,
+            MakingReportResponse
+        )
+
+        customProtocolService.registerCustomProtocol(
+            UserDefinedProtocolNumber.REPORT_MAKING,
+            reportService.makingReport
+        )
+
+    @staticmethod
+    def registerReportUpdatingProtocol():
+        customProtocolService = CustomProtocolServiceImpl.getInstance()
+        reportService = MakingReportServiceImpl.getInstance()
+
+        requestClassMapInstance = RequestClassMap.getInstance()
+        requestClassMapInstance.addRequestClass(
+            UserDefinedProtocolNumber.REPORT_UPDATING,
+            MakingReportRequest
+        )
+
+        responseClassMapInstance = ResponseClassMap.getInstance()
+        responseClassMapInstance.addResponseClass(
+            UserDefinedProtocolNumber.REPORT_UPDATING,
+            MakingReportResponse
+        )
+
+        customProtocolService.registerCustomProtocol(
+            UserDefinedProtocolNumber.REPORT_UPDATING,
+            reportService.makingReport
+        )
+
+
+
+    @staticmethod
     def registerUserDefinedProtocol():
         UserDefinedProtocolRegister.registerTestProtocol()
         UserDefinedProtocolRegister.registerPolyglotProtocol()
         UserDefinedProtocolRegister.registerPolyglotScoreProtocol()
+        UserDefinedProtocolRegister.registerReportMakingProtocol()
