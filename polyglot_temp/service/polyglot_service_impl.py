@@ -42,6 +42,7 @@ class PolyglotServiceImpl(PolyglotService):
         resultList = []
         for interview in interviewList:
             question, userAnswer, intent = interview[0], interview[1], interview[2]
+            print(f"question: {question}\nuserAnswer: {userAnswer}\nintent: {intent}")
             result = self.__polyglotRepository.scoreUserAnswer(question, userAnswer, intent)
             resultList.append(result)
 
