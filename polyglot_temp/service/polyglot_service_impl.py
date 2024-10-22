@@ -2,9 +2,6 @@ import os
 
 from polyglot_temp.repository.polyglot_repository_impl import PolyglotRepositoryImpl
 from polyglot_temp.service.polyglot_service import PolyglotService
-import sys
-sys.path.append('/home/eddi/.local/lib/python3.8/site-packages')
-from utilitybelt.color_print import ColorPrinter
 
 
 class PolyglotServiceImpl(PolyglotService):
@@ -40,7 +37,7 @@ class PolyglotServiceImpl(PolyglotService):
             self.__polyglotRepository.downloadPretrainedModel()
 
         interviewList = arg[0]
-        ColorPrinter.print_important_message("interviewList: ", interviewList)
+        print("interviewList: ", interviewList)
 
         resultList = []
         for interview in interviewList:
