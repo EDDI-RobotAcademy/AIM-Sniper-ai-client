@@ -48,14 +48,6 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
 
         return cls.__instance
 
-    def saveData(self, dictData, directory):
-        date = datetime.today().strftime("%Y_%m_%d")
-        path = f"../{directory}"
-
-        os.makedirs(path, exist_ok=True)
-        with open(f"{path}/{date}.json", "w", encoding='UTF-8-sig') as file:
-            json.dump(dictData, file, ensure_ascii=False, indent=4)
-
     def getCorpCodeDict(self):
         return self.__wantedCorpCodeDict
 
@@ -155,7 +147,5 @@ class DataForCorpBusinessRepositoryImpl(DataForCorpBusinessRepository):
                 changedContextDict[corpName] = {
                     "businessSummary": response.choices[0].message.content
                 }
-
-        self.saveData(changedContextDict, "../data/dart_corp_business/preprocessed_data_v3")
 
         return changedContextDict

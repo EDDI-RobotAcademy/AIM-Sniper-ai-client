@@ -31,19 +31,9 @@ class DataForCorpOverviewRepositoryImpl(DataForCorpOverviewRepository):
 
         return cls.__instance
 
-    def saveData(self, dictData, directory):
-        date = datetime.today().strftime("%Y_%m_%d")
-        path = f"../{directory}"
-
-        os.makedirs(path, exist_ok=True)
-        with open(f"{path}/{date}.json", "w", encoding='UTF-8-sig') as file:
-            json.dump(dictData, file, ensure_ascii=False, indent=4)
-
     def getRawOverviewDataFromDart(self, corpCodeDict):
         overviewDict = {corpName: dart.api.filings.get_corp_info(corpCode)
                         for corpName, corpCode in corpCodeDict.items()}
-
-        self.saveData(overviewDict, "../data/dart_corp_overview/raw_data")
 
         return overviewDict
 
@@ -78,5 +68,4 @@ class DataForCorpOverviewRepositoryImpl(DataForCorpOverviewRepository):
 
             overviewDict[corpName] = data
 
-        self.saveData(overviewDict, "../data/dart_corp_overview/preprocessed_data_v1")
         return overviewDict

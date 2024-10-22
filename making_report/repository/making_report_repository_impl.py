@@ -21,14 +21,6 @@ class MakingReportRepositoryImpl(MakingReportRepository):
 
         return cls.__instance
 
-    def saveData(self, dictData, directory):
-        date = datetime.today().strftime("%Y_%m_%d")
-        path = f"../{directory}"
-
-        os.makedirs(path, exist_ok=True)
-        with open(f"{path}/{date}.json", "w", encoding='UTF-8-sig') as file:
-            json.dump(dictData, file, ensure_ascii=False, indent=4)
-
     def getKeysInDictValues(self, dict):
         return list(dict.values())[0].keys()
 
@@ -44,7 +36,5 @@ class MakingReportRepositoryImpl(MakingReportRepository):
                     continue
                 infoDict.update(info[corpName])
             result[corpName] = infoDict
-
-        self.saveData(result, "../data/report/preprocessed_data_v1")
 
         return result
