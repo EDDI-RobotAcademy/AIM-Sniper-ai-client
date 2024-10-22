@@ -40,14 +40,6 @@ class DataForFinanceRepositoryImpl(DataForFinanceRepository):
 
         return cls.__instance
 
-    def saveData(self, dictData, directory):
-        date = datetime.today().strftime("%Y_%m_%d")
-        path = f"../{directory}"
-
-        os.makedirs(path, exist_ok=True)
-        with open(f"{path}/{date}.json", "w", encoding='UTF-8-sig') as file:
-            json.dump(dictData, file, ensure_ascii=False, indent=4)
-
     def parsingFromOpenAPI(self, corpCode):
         url = "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.xml"
         params = {
@@ -181,6 +173,5 @@ class DataForFinanceRepositoryImpl(DataForFinanceRepository):
                                             "profitTrend": profitTrend,
                                             "ownersCapital": ownersCapital}
 
-        self.saveData(financialDataDict, "../data/dart_financial_statements/preprocessed_data_v1")
 
         return financialDataDict
