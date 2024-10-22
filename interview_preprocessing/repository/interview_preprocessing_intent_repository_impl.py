@@ -176,4 +176,17 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
         print(f'difference between ({intentKey}, {compareKey}) : {totalDiff}%')
         return intentDiffRatios
 
+    def getStartQuestion(self, interviewList):
+        resultList= []
+        for interview in interviewList[0]:
+            question = interview['question']
+
+            if any(keyword in question for keyword in ['장단점', '장점', '단점']):
+                if all(keyword not in question for keyword in ['네이버', '구글', '마케팅', '에스엔에스', '영업', '제품', '디엔에스',
+                                                               '채널', '서비스', '써비스', '아이피', '프로그래밍', '엔진', '씨에스']):
+
+                    resultList.append({'question': question.replace('마지막으로 ', ''),
+                                       'answer': interview['answer'],
+                                       'intent': '자기 분석'})
+        return resultList
 

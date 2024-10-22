@@ -115,6 +115,9 @@ def getTechAnswerAndScore(techQuestionFilePath):
 def getQASData(sessionDataPath):
     interview.getQASByLLM(sessionDataPath)
 
+def getStartQuestion(filteredFilePath, startQuestionFilePath):
+    interview.getStartQuestionList(filteredFilePath, startQuestionFilePath)
+
 if __name__ == '__main__':
     # rawFilePath = 'assets\\json_data_raw\\'
     # concatenatedFilePath = 'assets\\json_data_concatenated\\'
@@ -123,12 +126,13 @@ if __name__ == '__main__':
     # separatedFilePath = 'assets\\json_data_separated\\'
     # separateDataByInfo(concatenatedFilePath, separatedFilePath)
 
-    # filteredFilePath = 'assets\\json_data_filtered\\'
+    filteredFilePath = 'assets\\json_data_filtered\\'
     # filterInterviewData(separatedFilePath, filteredFilePath)
 
     labeledFilePath = 'assets\\json_data_intent_labeled\\'
     # labelingIntentByRuleBase(filteredFilePath, labeledFilePath)
-
+    startQuestionFilePath = 'assets\\json_data_start_question\\'
+    getStartQuestion(filteredFilePath, startQuestionFilePath)
     # 샘플링 할시
     # totalLabeledFile = os.path.join(labeledFilePath, 'total_intent_labeled_68078.json')
     # saveSampledLabeledInterview(totalLabeledFile, labeledFilePath)
@@ -141,8 +145,8 @@ if __name__ == '__main__':
     # sessionDataPath = 'assets\\json_data_session\\data_set_1' #  (total 3578)
     # sessionDataPath = 'assets\\json_data_session\\data_set_2' # start : 3579 (total 3578) +1 옆에 + 3578해주기
     # sessionDataPath = 'assets\\json_data_session\\data_set_3'
-    sessionDataPath = 'assets\\json_data_session\\'
-    getQASData(sessionDataPath)
+    # sessionDataPath = 'assets\\json_data_session\\'
+    # getQASData(sessionDataPath)
     # scoreAnswer(sessionDataPath)
     # getTechAnswerAndScore()
 
