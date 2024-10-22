@@ -36,7 +36,7 @@ class PolyglotServiceImpl(PolyglotService):
         if not os.path.exists(cacheDir):
             self.__polyglotRepository.downloadPretrainedModel()
 
-        interviewList = arg[0]
+        interviewList = arg
         print("interviewList: ", interviewList)
 
         resultList = []
