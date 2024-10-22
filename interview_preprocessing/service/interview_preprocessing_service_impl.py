@@ -322,15 +322,14 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
                     intent = intentList[idx]
                     rand = random.random()  # 0~1 사이의 값
                     if rand < 0.2:
-                        qaSetList = (self.__interviewPreprocessingOpenAIRepository.
-                                     generateQAS(beforeQuestion, beforeAnswer, intent, 20))
-                    elif rand < 0.5:  # 0.2~0.5: 30% 범위
-                        qaSetList = (self.__interviewPreprocessingOpenAIRepository.
-                                     generateQAS(beforeQuestion, beforeAnswer, intent, 30))
+                        percent = 20
+                    elif rand < 0.5:
+                        percent = 30
                     else:
-                        qaSetList = (self.__interviewPreprocessingOpenAIRepository.
-                                     generateQAS(beforeQuestion, beforeAnswer, intent, 50))
+                        percent = 50
 
+                    qaSetList = self.__interviewPreprocessingOpenAIRepository.generateQAS(beforeQuestion, beforeAnswer,
+                                                                                          intent, percent)
                     qaSetList = qaSetList.split('<s>')
                     question = qaSetList[0].replace('question:', '').replace('\"', '').strip()
                     answer = qaSetList[1].replace('answer:', '').replace('\"', '').strip()
