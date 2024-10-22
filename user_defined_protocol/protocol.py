@@ -6,6 +6,7 @@ class UserDefinedProtocolNumber(Enum):
     TEST = 6
     POLYGLOT = 7
     POLYGLOT_SCORE = 8
+    REPORT_MAKING = 50
 
     @classmethod
     def hasValue(cls, value):
