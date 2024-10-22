@@ -18,13 +18,5 @@ class InterviewPreprocessingOpenAIRepository(ABC):
         pass
 
     @abstractmethod
-    def generateQAS(self, beforeQuestion, beforeAnswer, intent):
-        pass
-
-    @abstractmethod
-    def generateQASUnder65(self, beforeQuestion, beforeAnswer, intent):
-        pass
-
-    @abstractmethod
-    def generateQASUnder50(self, beforeQuestion, beforeAnswer, intent):
+    def generateQAS(self, beforeQuestion, beforeAnswer, intent, percent):
         pass

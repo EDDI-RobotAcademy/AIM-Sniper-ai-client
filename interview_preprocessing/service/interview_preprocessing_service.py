@@ -85,6 +85,9 @@ class InterviewPreprocessingService(ABC):
         pass
 
     @abstractmethod
-    def getQASByLLM(self, inputFilePath):
+    def getStartQuestionList(self, inputFilePath, saveFilePath):
         pass
 
+    @abstractmethod
+    def getQASByLLM(self, inputFilePath):
+        pass
