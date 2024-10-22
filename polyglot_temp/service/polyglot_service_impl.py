@@ -2,7 +2,10 @@ import os
 
 from polyglot_temp.repository.polyglot_repository_impl import PolyglotRepositoryImpl
 from polyglot_temp.service.polyglot_service import PolyglotService
+import sys
+sys.path.append('/home/eddi/.local/lib/python3.8/site-packages')
 from utility.color_print import ColorPrinter
+
 
 class PolyglotServiceImpl(PolyglotService):
     __instance = None
