@@ -20,6 +20,7 @@ from interview_preprocessing.service.interview_preprocessing_service import Inte
 
 class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
     __instance = None
+    PROJECT_EXPERIENCE_FILE = 'assets\\json_data_separated_by_intent\\프로젝트_경험_914.json'
 
     def __new__(cls):
         if cls.__instance is None:
@@ -292,27 +293,43 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         savePath = os.path.join(savePath, f'tech_data_answered_{len(questionList)}.json')
         self.__interviewPreprocessingFileRepository.saveFile(savePath, questionList)
 
-    def getQASByLLM(self, inputFilePath):
-        sessionList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)[:2]
-        for i, session in tqdm(enumerate(sessionList), total=len(sessionList), desc='generate total data'):
-            generatedSession = [session[0]]
+    def getStartQuestionList(self, inputFilePath, saveFilePath):
+        interviewList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)
+        labeledInterviewList = self.__interviewPreprocessingIntentRepository.getStartQuestion(interviewList)
 
-            for idx in range(1, len(session)):
+        os.makedirs(saveFilePath, exist_ok=True)
+        savePath = os.path.join(saveFilePath, f'start_question_{len(labeledInterviewList)}.json')
+        self.__interviewPreprocessingFileRepository.saveFile(savePath, labeledInterviewList)
+
+    def getQASByLLM(self, inputFilePath):
+        startQuestionList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)[0][:5]
+        intentList = ['자기 분석', '대처 능력', '소통 능력', '프로젝트 경험', '자기 개발']
+        for i, startQuestion in tqdm(enumerate(startQuestionList),
+                                     total=len(startQuestionList), desc='generate total data'):
+            result = (self.__interviewPreprocessingOpenAIRepository.
+                      scoreAnswer(startQuestion['question'], startQuestion['intent'], startQuestion['answer']))
+            resultList = result.split('<s>')
+            score = resultList[0].replace('score:', '').replace('\"', '').strip()
+            feedback = resultList[1].replace('feedback:', '').replace('\"', '').strip()
+            startQuestion['score'] = score
+            startQuestion['feedback'] = feedback
+            generatedSession = [startQuestion]
+
+            for idx in range(1, 5):
                 try:
                     beforeQuestion = generatedSession[idx-1].get('question')
                     beforeAnswer = generatedSession[idx-1].get('answer')
-                    intent = session[idx].get('rule_based_intent')
+                    intent = intentList[idx]
                     rand = random.random()  # 0~1 사이의 값
                     if rand < 0.2:
-                        qaSetList = (self.__interviewPreprocessingOpenAIRepository.
-                                     generateQASUnder50(beforeQuestion, beforeAnswer, intent))
-                    elif rand < 0.5:  # 0.2~0.5: 30% 범위
-                        qaSetList = (self.__interviewPreprocessingOpenAIRepository.
-                                     generateQASUnder65(beforeQuestion, beforeAnswer, intent))
+                        percent = 20
+                    elif rand < 0.5:
+                        percent = 30
                     else:
-                        qaSetList = (self.__interviewPreprocessingOpenAIRepository.
-                                     generateQAS(beforeQuestion, beforeAnswer, intent))
+                        percent = 50
 
+                    qaSetList = self.__interviewPreprocessingOpenAIRepository.generateQAS(beforeQuestion, beforeAnswer,
+                                                                                          intent, percent)
                     qaSetList = qaSetList.split('<s>')
                     question = qaSetList[0].replace('question:', '').replace('\"', '').strip()
                     answer = qaSetList[1].replace('answer:', '').replace('\"', '').strip()
@@ -320,17 +337,18 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
                     feedback = qaSetList[3].replace('feedback:', '').replace('\"', '').strip()
                     generatedSession.append({'question': question, 'answer': answer, 'intent': intent,
                                              'score': score, 'feedback': feedback})
+
                 except ConnectionError:
-                    sessionList.remove(session)
+                    startQuestionList.remove(startQuestion)
                     print('Connection Error!')
                     continue
 
                 except Exception as e:
-                    sessionList.remove(session)
+                    startQuestionList.remove(startQuestion)
                     print(f"Wrong output! Ignore session_{i+1}. error: ", e)
                     continue
 
-                if len(generatedSession) == 6: # 5로 바꾸기
+                if len(generatedSession) == 5:
                     savePath = 'assets\\json_qas_by_llm'
                     os.makedirs(savePath, exist_ok=True)
                     (self.__interviewPreprocessingFileRepository.
