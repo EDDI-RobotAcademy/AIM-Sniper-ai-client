@@ -36,9 +36,13 @@ class PolyglotServiceImpl(PolyglotService):
         if not os.path.exists(cacheDir):
             self.__polyglotRepository.downloadPretrainedModel()
 
-        question = arg[0]
-        userAnswer = arg[1]
-        intent = arg[2]
+        interviewList = arg[0]
 
-        return self.__polyglotRepository.scoreUserAnswer(question, userAnswer, intent)
+        resultList = []
+        for interview in interviewList:
+            question, userAnswer, intent = interview[0], interview[1], interview[2]
+            result = self.__polyglotRepository.scoreUserAnswer(question, userAnswer, intent)
+            resultList.append(result)
+
+        return resultList
 
