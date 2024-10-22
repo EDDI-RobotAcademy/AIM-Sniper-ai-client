@@ -335,3 +335,20 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
                     os.makedirs(savePath, exist_ok=True)
                     (self.__interviewPreprocessingFileRepository.
                      saveFile(os.path.join(savePath, f'qas_{i+1}.json'), generatedSession, silent=True))
+
+    def getStartQuestionList(self, inputFilePath, saveFilePath):
+        interviewList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)
+        labeledInterviewList = self.__interviewPreprocessingIntentRepository.getStartQuestion(interviewList)
+
+        os.makedirs(saveFilePath, exist_ok=True)
+        savePath = os.path.join(saveFilePath, f'start_question_{len(labeledInterviewList)}.json')
+        self.__interviewPreprocessingFileRepository.saveFile(savePath, labeledInterviewList)
+
+        labeledInterviewListNotNull = []
+        for interview in labeledInterviewList:
+            intent = interview.get('rule_based_intent')
+            if intent is not None:
+                labeledInterviewListNotNull.append(interview)
+
+        savePath = os.path.join(saveFilePath, f'intent_labeled_not_null_{len(labeledInterviewListNotNull)}.json')
+        self.__interviewPreprocessingFileRepository.saveFile(savePath, labeledInterviewListNotNull)

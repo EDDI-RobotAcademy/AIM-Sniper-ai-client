@@ -44,19 +44,6 @@ class PolyglotRepositoryImpl(PolyglotRepository):
     tokenizer.pad_token_id = tokenizer.eos_token_id
     tokenizer.model_max_length = config['max_token_length']
 
-    # lora adapter 변화랑 model parameter에 병합 - merge_and_unload() 안해도 되지만, 그러면 추론 속도가 느림
-    # interviewModel = PeftModel.from_pretrained(model, loraAdapterInterviewPath)
-    # interviewModel = interviewModel.merge_and_unload()
-    #
-    # interviewModel.eval()
-    # interviewModel.to(device)
-
-    # lora adapter 변화랑 model parameter에 병합 - merge_and_unload() 안해도 되지만, 그러면 추론 속도가 느림
-    # scoreModel = PeftModel.from_pretrained(model, loraAdapterScorePath)
-    # scoreModel = scoreModel.merge_and_unload()
-    #
-    # scoreModel.eval()
-    # scoreModel.to(device)
 
     def __new__(cls):
         if cls.__instance is None:

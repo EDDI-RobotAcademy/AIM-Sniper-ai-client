@@ -30,3 +30,7 @@ class InterviewPreprocessingIntentRepository(ABC):
     @abstractmethod
     def calculateDifferentIntentRatios(self, interviewList, intentKey, compareKey):
         pass
+
+    @abstractmethod
+    def getStartQuestion(self, interviewList):
+        pass
