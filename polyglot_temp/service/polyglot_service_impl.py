@@ -2,7 +2,7 @@ import os
 
 from polyglot_temp.repository.polyglot_repository_impl import PolyglotRepositoryImpl
 from polyglot_temp.service.polyglot_service import PolyglotService
-
+from utility.color_print import ColorPrinter
 
 class PolyglotServiceImpl(PolyglotService):
     __instance = None
@@ -37,6 +37,7 @@ class PolyglotServiceImpl(PolyglotService):
             self.__polyglotRepository.downloadPretrainedModel()
 
         interviewList = arg[0]
+        ColorPrinter.print_important_message("interviewList: ", interviewList)
 
         resultList = []
         for interview in interviewList:
