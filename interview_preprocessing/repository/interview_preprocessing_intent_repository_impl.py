@@ -59,7 +59,7 @@ class InterviewPreprocessingIntentRepositoryImpl(ABC):
                     interview['rule_based_intent'] = '적응력'
             elif any(keyword in question for keyword in self.PROJECT_KEYWORD):
                 if all(keyword not in question for keyword in ['창의성', '팀워크', '산사태', '역할', '경영을 책임',
-                                                               '디자인 영감', '아이디어', '기법', '기차', '산 사태']):
+                                                               '디자인', '아이디어', '기법', '기차', '산 사태', '작품']):
                     interview['rule_based_intent'] = '프로젝트 경험'
             elif any(keyword in question for keyword in self.SELF_DEVELOPMENT_KEYWORD):
                 if all(keyword not in question for keyword in ['기억에 남는 과목']):
