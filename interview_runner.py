@@ -148,7 +148,7 @@ if __name__ == '__main__':
     # scoreAnswer(sessionDataPath)
 
 
-    # all by LLM
+    # all session by LLM
     getQASData(startQuestionFilePath)
 
     # LLM 기반 키워드 추출
