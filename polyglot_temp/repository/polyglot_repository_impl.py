@@ -128,4 +128,4 @@ class PolyglotRepositoryImpl(PolyglotRepository):
             output = output[inputLength:]
         result = output
 
-        return {"score result": result}
+        return result
