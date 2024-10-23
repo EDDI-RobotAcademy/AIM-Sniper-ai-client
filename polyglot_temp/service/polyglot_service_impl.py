@@ -46,5 +46,4 @@ class PolyglotServiceImpl(PolyglotService):
             result = self.__polyglotRepository.scoreUserAnswer(question, userAnswer, intent)
             resultList.append(result)
 
-        return resultList
-
+        return {'resultList': resultList}
