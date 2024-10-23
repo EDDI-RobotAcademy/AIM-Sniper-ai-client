@@ -302,54 +302,64 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         self.__interviewPreprocessingFileRepository.saveFile(savePath, labeledInterviewList)
 
     def getQASByLLM(self, inputFilePath):
-        startQuestionList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)[0][:5]
+        startQuestionList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)[0]
         intentList = ['자기 분석', '대처 능력', '소통 능력', '프로젝트 경험', '자기 개발']
         for i, startQuestion in tqdm(enumerate(startQuestionList),
                                      total=len(startQuestionList), desc='generate total data'):
-            result = (self.__interviewPreprocessingOpenAIRepository.
-                      scoreAnswer(startQuestion['question'], startQuestion['intent'], startQuestion['answer']))
-            resultList = result.split('<s>')
-            score = resultList[0].replace('score:', '').replace('\"', '').strip()
-            feedback = resultList[1].replace('feedback:', '').replace('\"', '').strip()
-            startQuestion['score'] = score
-            startQuestion['feedback'] = feedback
-            generatedSession = [startQuestion]
+            try:
+                result = (self.__interviewPreprocessingOpenAIRepository.
+                          scoreAnswer(startQuestion['question'], startQuestion['intent'], startQuestion['answer']))
+                resultList = result.split('<s>')
+                score = resultList[0].replace('score:', '').replace('\"', '').strip()
+                feedback = resultList[1].replace('feedback:', '').replace('\"', '').strip()
+                startQuestion['score'] = score
+                startQuestion['feedback'] = feedback
+                generatedSession = [startQuestion]
 
-            for idx in range(1, 5):
-                try:
-                    beforeQuestion = generatedSession[idx-1].get('question')
-                    beforeAnswer = generatedSession[idx-1].get('answer')
-                    intent = intentList[idx]
-                    rand = random.random()  # 0~1 사이의 값
-                    if rand < 0.2:
-                        percent = 20
-                    elif rand < 0.5:
-                        percent = 30
-                    else:
-                        percent = 50
 
-                    qaSetList = self.__interviewPreprocessingOpenAIRepository.generateQAS(beforeQuestion, beforeAnswer,
-                                                                                          intent, percent)
-                    qaSetList = qaSetList.split('<s>')
-                    question = qaSetList[0].replace('question:', '').replace('\"', '').strip()
-                    answer = qaSetList[1].replace('answer:', '').replace('\"', '').strip()
-                    score = qaSetList[2].replace('score:', '').replace('\"', '').strip()
-                    feedback = qaSetList[3].replace('feedback:', '').replace('\"', '').strip()
-                    generatedSession.append({'question': question, 'answer': answer, 'intent': intent,
-                                             'score': score, 'feedback': feedback})
+                for idx in range(1, 5):
+                    try:
+                        beforeQuestion = generatedSession[idx-1].get('question')
+                        beforeAnswer = generatedSession[idx-1].get('answer')
+                        intent = intentList[idx]
+                        rand = random.random()  # 0~1 사이의 값
+                        if rand < 0.2:
+                            percent = 20
+                        elif rand < 0.5:
+                            percent = 30
+                        else:
+                            percent = 50
 
-                except ConnectionError:
-                    startQuestionList.remove(startQuestion)
-                    print('Connection Error!')
-                    continue
+                        qaSetList = self.__interviewPreprocessingOpenAIRepository.generateQAS(beforeQuestion, beforeAnswer,
+                                                                                              intent, percent)
+                        qaSetList = qaSetList.split('<s>')
+                        question = qaSetList[0].replace('question:', '').replace('\"', '').strip()
+                        answer = qaSetList[1].replace('answer:', '').replace('\"', '').strip()
+                        score = qaSetList[2].replace('score:', '').replace('\"', '').strip()
+                        feedback = qaSetList[3].replace('feedback:', '').replace('\"', '').strip()
+                        generatedSession.append({'question': question, 'answer': answer, 'intent': intent,
+                                                 'score': score, 'feedback': feedback})
+                    except ConnectionError:
+                        startQuestionList.remove(startQuestion)
+                        print('Connection Error!')
+                        continue
 
-                except Exception as e:
-                    startQuestionList.remove(startQuestion)
-                    print(f"Wrong output! Ignore session_{i+1}. error: ", e)
-                    continue
-
+                    except Exception as e:
+                        startQuestionList.remove(startQuestion)
+                        print(f"Wrong output! Ignore session_{i + 1}. error: ", e)
+                        continue
                 if len(generatedSession) == 5:
                     savePath = 'assets\\json_qas_by_llm'
                     os.makedirs(savePath, exist_ok=True)
                     (self.__interviewPreprocessingFileRepository.
-                     saveFile(os.path.join(savePath, f'qas_{i+1}.json'), generatedSession, silent=True))
+                     saveFile(os.path.join(savePath, f'qas_{i + 1}.json'), generatedSession, silent=True))
+
+            except ConnectionError:
+                startQuestionList.remove(startQuestion)
+                print('Connection Error!')
+                continue
+
+            except Exception as e:
+                startQuestionList.remove(startQuestion)
+                print(f"Wrong output! Ignore session_{i+1}. error: ", e)
+                continue
