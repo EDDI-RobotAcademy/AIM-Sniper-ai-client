@@ -106,12 +106,11 @@ class PolyglotRepositoryImpl(PolyglotRepository):
 
     def scoreUserAnswer(self, question, userAnswer, intent):
         prompt = (
-            "당신은 면접 대상자의 답변을 채점하는 채용 담당자입니다.\n"
-            "Question은 당신이 면접 대상자로부터 Intent를 파악하기 위한 질문입니다. "
-            "면접 대상자의 답변은 Question에 대한 답변입니다.\n"
-            "면접 대상자가 얼마나 Question에 잘 대답했는지를 1~100점 사이에서 평가해주세요.\n"
-            "면접 대상자의 답변에 대한 feedback과 당신이 100점이라고 생각하는 Answer를 제공해주세요.\n"
-            "Question: {question}\n면접 대상자의 답변: {answer}\nIntent: {intent}\noutput:"
+            "당신은 면접 대상자의 답변을 채점하는 면접관입니다.\n"
+            "면접 질문은 당신이 면접 대상자로부터 질문 의도인 '{intent}'에 대한 정보를 파악하기 위한 질문입니다. "
+            "면접 대상자의 답변은 면접 질문에 대한 답변입니다.\n"
+            "면접 대상자가 면접관의 질문에 대해 얼마나 잘 대답했는지를 1~100점으로 채점하고, 답변에 대한 feedback을 제공해주세요.\n"
+            "면접 질문: {question}\n면접 대상자의 답변: {answer}\n질문 의도: {intent}\noutput:"
         )
         source = prompt.format_map(dict(question=question, intent=intent, answer=userAnswer))
         input = self.tokenizer([source], return_tensors="pt", return_token_type_ids=False).to(self.device)
