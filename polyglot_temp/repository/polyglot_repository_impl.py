@@ -17,7 +17,7 @@ class PolyglotRepositoryImpl(PolyglotRepository):
     loraAdapterScoreName = "polyglot-ko-1.3b/score"
 
     loraAdapterInterviewPath = os.path.join("models", loraAdapterInterviewName, "checkpoint-100")
-    loraAdapterScorePath = os.path.join("models", loraAdapterScoreName, "checkpoint-100")
+    loraAdapterScorePath = os.path.join("models", loraAdapterScoreName, "checkpoint-190")
 
     config = {
         "pretrained_model_name_or_path": "EleutherAI/polyglot-ko-1.3b",
