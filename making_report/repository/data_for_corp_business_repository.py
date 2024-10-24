@@ -2,9 +2,6 @@ from abc import ABC, abstractmethod
 
 
 class DataForCorpBusinessRepository(ABC):
-    @abstractmethod
-    def saveData(self, dictData, directory):
-        pass
 
     @abstractmethod
     def getCorpCodeDict(self):
