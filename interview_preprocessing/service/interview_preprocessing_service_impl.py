@@ -302,7 +302,7 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         self.__interviewPreprocessingFileRepository.saveFile(savePath, labeledInterviewList)
 
     def getQASByLLM(self, inputFilePath):
-        startQuestionList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)[0]
+        startQuestionList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)[0][2703:]
         intentList = ['자기 분석', '대처 능력', '소통 능력', '프로젝트 경험', '자기 개발']
         for i, startQuestion in tqdm(enumerate(startQuestionList),
                                      total=len(startQuestionList), desc='generate total data'):
@@ -352,14 +352,14 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
                     savePath = 'assets\\json_qas_by_llm'
                     os.makedirs(savePath, exist_ok=True)
                     (self.__interviewPreprocessingFileRepository.
-                     saveFile(os.path.join(savePath, f'qas_{i + 1}.json'), generatedSession, silent=True))
+                     saveFile(os.path.join(savePath, f'qas_{i + 1+ 2693}.json'), generatedSession, silent=True))
 
             except ConnectionError:
-                startQuestionList.remove(startQuestion)
+                generatedSession = []
                 print('Connection Error!')
                 continue
 
             except Exception as e:
-                startQuestionList.remove(startQuestion)
-                print(f"Wrong output! Ignore session_{i+1}. error: ", e)
+                generatedSession = []
+                print(e)
                 continue
