@@ -121,6 +121,7 @@ class PolyglotRepositoryImpl(PolyglotRepository):
 
         scoreModel.eval()
         scoreModel.to(self.device)
+        torch.save(scoreModel.state_dict(), os.path.join('save_model.pth'))
         with torch.no_grad():
             output = scoreModel.generate(**input, max_new_tokens=1024)
             output = self.tokenizer.decode(output[0], skip_special_tokens=True)
