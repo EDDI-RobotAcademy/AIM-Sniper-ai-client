@@ -12,6 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'template'))
 from template.client_socket.service.client_socket_service_impl import ClientSocketServiceImpl
 from template.command_analyzer.service.command_analyzer_service_impl import CommandAnalyzerServiceImpl
 from template.command_executor.service.command_executor_service_impl import CommandExecutorServiceImpl
+from template.conditional_custom_executor.service.conditional_custom_executor_service_impl import ConditionalCustomExecutorServiceImpl
 from template.initializer.init_domain import DomainInitializer
 from template.os_detector.detect import OperatingSystemDetector
 from template.os_detector.operating_system import OperatingSystem
@@ -42,6 +43,9 @@ if __name__ == "__main__":
         ColorPrinter.print_important_message("범용 운영체제 외에는 실행 할 수 없습니다!")
         exit(1)
 
+
+    threadWorkerPoolService = ThreadWorkerPoolServiceImpl.getInstance()
+
     try:
         clientSocketService = ClientSocketServiceImpl.getInstance()
         clientSocket = clientSocketService.createClientSocket()
@@ -56,29 +60,35 @@ if __name__ == "__main__":
         commandAnalyzerService = CommandAnalyzerServiceImpl.getInstance()
         commandExecutorService = CommandExecutorServiceImpl.getInstance()
 
-        threadWorkerPoolService = ThreadWorkerPoolServiceImpl.getInstance()
+        conditionalCustomExecutorService = ConditionalCustomExecutorServiceImpl.getInstance()
 
-        for receiverId in range(6):
+        # threadWorkerPoolService = ThreadWorkerPoolServiceImpl.getInstance()
+        # TODO: 맥북 m2 스레드 최대 지원 개수가 12개임
+        for receiverId in range(3):
             threadWorkerPoolService.executeThreadPoolWorker(
                 f"Receiver-{receiverId}",
                 partial(receiverService.requestToReceiveCommand, receiverId)
             )
 
-            # Command Analyzer Thread Pool (6개)
-        for analyzerId in range(6):
+        for analyzerId in range(2):
             threadWorkerPoolService.executeThreadPoolWorker(
                 f"CommandAnalyzer-{analyzerId}",
                 partial(commandAnalyzerService.analysisCommand, analyzerId)
             )
 
-            # Command Executor Thread Pool (5개)
-        for executorId in range(5):
+        for executorId in range(4):
             threadWorkerPoolService.executeThreadPoolWorker(
                 f"CommandExecutor-{executorId}",
                 partial(commandExecutorService.executeCommand, executorId)
             )
 
-            # Transmitter Thread Pool (1개)
+        for conditionalCustomExecutorId in range(2):
+            threadWorkerPoolService.executeThreadPoolWorker(
+                f"ConditionalCustomExecutor-{conditionalCustomExecutorId}",
+                partial(conditionalCustomExecutorService.executeConditionalCustomCommand,
+                        conditionalCustomExecutorId)
+            )
+
         threadWorkerPoolService.executeThreadPoolWorker(
             "Transmitter-0",
             partial(transmitterService.requestToTransmitResult, 0)  # 단일 ID 사용
