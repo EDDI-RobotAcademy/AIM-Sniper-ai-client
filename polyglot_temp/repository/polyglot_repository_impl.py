@@ -13,11 +13,7 @@ class PolyglotRepositoryImpl(PolyglotRepository):
     cacheDir = os.path.join("models", "cache")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    loraAdapterInterviewName = "polyglot-ko-1.3b/test_20_100"
-    loraAdapterScoreName = "polyglot-ko-1.3b/score"
 
-    loraAdapterInterviewPath = os.path.join("models", loraAdapterInterviewName, "checkpoint-100")
-    loraAdapterScorePath = os.path.join("models", loraAdapterScoreName, "checkpoint-190")
 
     config = {
         "pretrained_model_name_or_path": "EleutherAI/polyglot-ko-1.3b",
@@ -76,6 +72,9 @@ class PolyglotRepositoryImpl(PolyglotRepository):
         )
 
     def generateQuestion(self, userAnswer, nextIntent):
+        loraAdapterInterviewName = "polyglot-ko-1.3b/test_20_100"
+        loraAdapterInterviewPath = os.path.join("interview_model", loraAdapterInterviewName, "checkpoint-100")
+
         prompt = (
             "당신은 면접관입니다. 다음 명령에 따라 적절한 질문을 수행하세요.\n"
             "화자의 응답 기록을 참고하여 주제에 관련된 적절한 질문을 생성하세요.\n"
@@ -89,7 +88,7 @@ class PolyglotRepositoryImpl(PolyglotRepository):
         input = self.tokenizer([source], return_tensors="pt", return_token_type_ids=False).to(self.device)
         inputLength = len(source)
 
-        interviewModel = PeftModel.from_pretrained(self.model, self.loraAdapterInterviewPath)
+        interviewModel = PeftModel.from_pretrained(self.model, loraAdapterInterviewPath)
         interviewModel = interviewModel.merge_and_unload()
 
         interviewModel.eval()
@@ -105,6 +104,9 @@ class PolyglotRepositoryImpl(PolyglotRepository):
         return {"nextQuestion": nextQuestion}
 
     def scoreUserAnswer(self, question, userAnswer, intent):
+        loraAdapterScoreName = "polyglot-ko-1.3b/score"
+        loraAdapterScorePath = os.path.join("interview_model", loraAdapterScoreName, "checkpoint-190")
+
         prompt = (
             "당신은 면접 대상자의 답변을 채점하는 면접관입니다.\n"
             "면접 질문은 당신이 면접 대상자로부터 질문 의도인 '{intent}'에 대한 정보를 파악하기 위한 질문입니다. "
@@ -116,7 +118,7 @@ class PolyglotRepositoryImpl(PolyglotRepository):
         input = self.tokenizer([source], return_tensors="pt", return_token_type_ids=False).to(self.device)
         inputLength = len(source)
 
-        scoreModel = PeftModel.from_pretrained(self.model, self.loraAdapterScorePath)
+        scoreModel = PeftModel.from_pretrained(self.model, loraAdapterScorePath)
         scoreModel = scoreModel.merge_and_unload()
 
         scoreModel.eval()
