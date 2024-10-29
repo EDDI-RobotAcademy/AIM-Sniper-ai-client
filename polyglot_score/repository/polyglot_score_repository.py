@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
 
-class PolyglotRepository(ABC):
+class PolyglotScoreRepository(ABC):
     @abstractmethod
     def downloadPretrainedModel(self):
         pass
 
     @abstractmethod
-    def generateQuestion(self, userAnswer, nextIntent):
+    def scoreUserAnswer(self, question, userAnswer, intent):
         pass

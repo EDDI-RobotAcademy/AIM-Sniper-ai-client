@@ -5,7 +5,3 @@ class PolyglotService(ABC):
     @abstractmethod
     def generateNextQuestion(self, *arg, **kwargs):
         pass
-
-    @abstractmethod
-    def scoreUserAnswer(self, *arg, **kwargs):
-        pass
