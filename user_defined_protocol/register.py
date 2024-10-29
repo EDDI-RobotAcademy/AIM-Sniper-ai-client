@@ -7,8 +7,9 @@ from making_report.service.response.making_report_response import MakingReportRe
 from polyglot_temp.service.polyglot_service_impl import PolyglotServiceImpl
 from polyglot_temp.service.request.polyglot_request import PolyglotRequest
 from polyglot_temp.service.response.polyglot_response import PolyglotResponse
-from polyglot_temp.service.request.polyglot_score_request import PolyglotScoreRequest
-from polyglot_temp.service.response.polyglot_score_response import PolyglotScoreResponse
+from polyglot_score.service.polyglot_score_service_impl import PolyglotScoreServiceImpl
+from polyglot_score.service.request.polyglot_score_request import PolyglotScoreRequest
+from polyglot_score.service.response.polyglot_score_response import PolyglotScoreResponse
 from test.service.request.test_request import TestRequest
 from test.service.response.test_response import TestResponse
 from test.service.test_service_impl import TestServiceImpl
@@ -70,7 +71,7 @@ class UserDefinedProtocolRegister:
     @staticmethod
     def registerPolyglotScoreProtocol():
         customProtocolService = CustomProtocolServiceImpl.getInstance()
-        polyglotService = PolyglotServiceImpl.getInstance()
+        polyglotScoreService = PolyglotScoreServiceImpl.getInstance()
 
         requestClassMapInstance = RequestClassMap.getInstance()
         requestClassMapInstance.addRequestClass(
@@ -86,7 +87,7 @@ class UserDefinedProtocolRegister:
 
         customProtocolService.registerCustomProtocol(
             UserDefinedProtocolNumber.POLYGLOT_SCORE,
-            polyglotService.scoreUserAnswer
+            polyglotScoreService.scoreUserAnswer
         )
 
     @staticmethod

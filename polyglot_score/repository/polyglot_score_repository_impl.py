@@ -1,12 +1,12 @@
-from polyglot_temp.repository.polyglot_repository import PolyglotRepository
-
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 from peft import PeftModel
-
 import os
 
-class PolyglotRepositoryImpl(PolyglotRepository):
+from polyglot_score.repository.polyglot_score_repository import PolyglotScoreRepository
+
+
+class PolyglotScoreRepositoryImpl(PolyglotScoreRepository):
     __instance = None
 
     # load lora adaptor merged model
@@ -71,34 +71,31 @@ class PolyglotRepositoryImpl(PolyglotRepository):
             trust_remote_code=True
         )
 
-    def generateQuestion(self, userAnswer, nextIntent):
-        loraAdapterInterviewName = "polyglot-ko-1.3b/test_20_100"
-        loraAdapterInterviewPath = os.path.join("models", loraAdapterInterviewName, "checkpoint-100")
+    async def scoreUserAnswer(self, question, userAnswer, intent):
+        loraAdapterScoreName = "polyglot-ko-1.3b/score"
+        loraAdapterScorePath = os.path.join("models", loraAdapterScoreName, "checkpoint-190")
 
         prompt = (
-            "당신은 면접관입니다. 다음 명령에 따라 적절한 질문을 수행하세요.\n"
-            "화자의 응답 기록을 참고하여 주제에 관련된 적절한 질문을 생성하세요.\n"
-            "### 주제:\n{intent}\n\n### 화자의 응답 기록:\n{answer}\n\n### 질문 :\n"
+            "당신은 면접 대상자의 답변을 채점하는 면접관입니다.\n"
+            "면접 질문은 당신이 면접 대상자로부터 질문 의도인 '{intent}'에 대한 정보를 파악하기 위한 질문입니다. "
+            "면접 대상자의 답변은 면접 질문에 대한 답변입니다.\n"
+            "면접 대상자가 면접관의 질문에 대해 얼마나 잘 대답했는지를 1~100점으로 채점하고, 답변에 대한 feedback을 제공해주세요.\n"
+            "면접 질문: {question}\n면접 대상자의 답변: {answer}\n질문 의도: {intent}\noutput:"
         )
-
-        beforeAnswer = userAnswer
-        source = prompt.format_map(dict(answer=beforeAnswer,
-                                        intent=nextIntent))
-
+        source = prompt.format_map(dict(question=question, intent=intent, answer=userAnswer))
         input = self.tokenizer([source], return_tensors="pt", return_token_type_ids=False).to(self.device)
         inputLength = len(source)
 
-        interviewModel = PeftModel.from_pretrained(self.model, loraAdapterInterviewPath)
-        interviewModel = interviewModel.merge_and_unload()
+        scoreModel = PeftModel.from_pretrained(self.model, loraAdapterScorePath)
+        scoreModel = scoreModel.merge_and_unload()
 
-        interviewModel.eval()
-        interviewModel.to(self.device)
-
+        scoreModel.eval()
+        scoreModel.to(self.device)
+        torch.save(scoreModel.state_dict(), os.path.join('save_model.pth'))
         with torch.no_grad():
-            output = interviewModel.generate(**input, max_new_tokens=200)
+            output = scoreModel.generate(**input, max_new_tokens=1024)
             output = self.tokenizer.decode(output[0], skip_special_tokens=True)
             output = output[inputLength:]
+        result = output
 
-        nextQuestion = output
-
-        return {"nextQuestion": nextQuestion}
+        return result
