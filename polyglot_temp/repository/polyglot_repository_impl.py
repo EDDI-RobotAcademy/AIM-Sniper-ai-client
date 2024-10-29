@@ -73,7 +73,7 @@ class PolyglotRepositoryImpl(PolyglotRepository):
 
     def generateQuestion(self, userAnswer, nextIntent):
         loraAdapterInterviewName = "polyglot-ko-1.3b/test_20_100"
-        loraAdapterInterviewPath = os.path.join("interview_model", loraAdapterInterviewName, "checkpoint-100")
+        loraAdapterInterviewPath = os.path.join("models", loraAdapterInterviewName, "checkpoint-100")
 
         prompt = (
             "당신은 면접관입니다. 다음 명령에 따라 적절한 질문을 수행하세요.\n"
@@ -105,7 +105,7 @@ class PolyglotRepositoryImpl(PolyglotRepository):
 
     async def scoreUserAnswer(self, question, userAnswer, intent):
         loraAdapterScoreName = "polyglot-ko-1.3b/score"
-        loraAdapterScorePath = os.path.join("interview_model", loraAdapterScoreName, "checkpoint-190")
+        loraAdapterScorePath = os.path.join("models", loraAdapterScoreName, "checkpoint-190")
 
         prompt = (
             "당신은 면접 대상자의 답변을 채점하는 면접관입니다.\n"
