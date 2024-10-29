@@ -23,23 +23,6 @@ class PolyglotScoreRepositoryImpl(PolyglotScoreRepository):
         "max_token_length": 1024,
     }
 
-    # base model and tokenizer load
-    model = AutoModelForCausalLM.from_pretrained(
-        pretrained_model_name_or_path=config['pretrained_model_name_or_path'],
-        trust_remote_code=config['trust_remote_code'],
-        cache_dir=cacheDir,
-        local_files_only=config['local_files_only'])
-
-    tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=config['pretrained_model_name_or_path'],
-                                              trust_remote_code=config['trust_remote_code'],
-                                              cache_dir=cacheDir,
-                                              local_files_only=config['local_files_only'],
-                                              padding_side=config['padding_side'])
-
-    tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.pad_token_id = tokenizer.eos_token_id
-    tokenizer.model_max_length = config['max_token_length']
-
 
     def __new__(cls):
         if cls.__instance is None:
@@ -75,6 +58,23 @@ class PolyglotScoreRepositoryImpl(PolyglotScoreRepository):
         loraAdapterScoreName = "polyglot-ko-1.3b/score"
         loraAdapterScorePath = os.path.join("models", loraAdapterScoreName, "checkpoint-190")
 
+        # base model and tokenizer load
+        model = AutoModelForCausalLM.from_pretrained(
+            pretrained_model_name_or_path=self.config['pretrained_model_name_or_path'],
+            trust_remote_code=self.config['trust_remote_code'],
+            cache_dir=self.cacheDir,
+            local_files_only=self.config['local_files_only'])
+
+        tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=self.config['pretrained_model_name_or_path'],
+                                                  trust_remote_code=self.config['trust_remote_code'],
+                                                  cache_dir=self.cacheDir,
+                                                  local_files_only=self.config['local_files_only'],
+                                                  padding_side=self.config['padding_side'])
+
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.model_max_length = self.config['max_token_length']
+
         prompt = (
             "당신은 면접 대상자의 답변을 채점하는 면접관입니다.\n"
             "면접 질문은 당신이 면접 대상자로부터 질문 의도인 '{intent}'에 대한 정보를 파악하기 위한 질문입니다. "
@@ -83,10 +83,10 @@ class PolyglotScoreRepositoryImpl(PolyglotScoreRepository):
             "면접 질문: {question}\n면접 대상자의 답변: {answer}\n질문 의도: {intent}\noutput:"
         )
         source = prompt.format_map(dict(question=question, intent=intent, answer=userAnswer))
-        input = self.tokenizer([source], return_tensors="pt", return_token_type_ids=False).to(self.device)
+        input = tokenizer([source], return_tensors="pt", return_token_type_ids=False).to(self.device)
         inputLength = len(source)
 
-        scoreModel = PeftModel.from_pretrained(self.model, loraAdapterScorePath)
+        scoreModel = PeftModel.from_pretrained(model, loraAdapterScorePath)
         scoreModel = scoreModel.merge_and_unload()
 
         scoreModel.eval()
@@ -94,7 +94,7 @@ class PolyglotScoreRepositoryImpl(PolyglotScoreRepository):
         torch.save(scoreModel.state_dict(), os.path.join('save_model.pth'))
         with torch.no_grad():
             output = scoreModel.generate(**input, max_new_tokens=1024)
-            output = self.tokenizer.decode(output[0], skip_special_tokens=True)
+            output = tokenizer.decode(output[0], skip_special_tokens=True)
             output = output[inputLength:]
         result = output
 
