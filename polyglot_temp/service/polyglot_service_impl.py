@@ -1,7 +1,8 @@
 import os
-
+import asyncio
 from polyglot_temp.repository.polyglot_repository_impl import PolyglotRepositoryImpl
 from polyglot_temp.service.polyglot_service import PolyglotService
+from template.utility.color_print import ColorPrinter
 
 
 class PolyglotServiceImpl(PolyglotService):
@@ -37,13 +38,13 @@ class PolyglotServiceImpl(PolyglotService):
             self.__polyglotRepository.downloadPretrainedModel()
 
         interviewList = arg
-        print("interviewList: ", interviewList)
 
-        resultList = []
-        for interview in interviewList:
-            question, userAnswer, intent = interview[0], interview[1], interview[2]
-            print(f"question: {question}\nuserAnswer: {userAnswer}\nintent: {intent}")
-            result = self.__polyglotRepository.scoreUserAnswer(question, userAnswer, intent)
-            resultList.append(result)
-
+        # 각 인터뷰에 대해 비동기 작업 생성
+        tasks = [
+            self.__polyglotRepository.scoreUserAnswer(interview[0], interview[1], interview[2])
+            for interview in interviewList
+        ]
+        # 모든 비동기 작업을 병렬로 실행
+        resultList = await asyncio.gather(*tasks)
+        ColorPrinter.print_important_message(f'resultList: {resultList}')
         return {'resultList': resultList}
