@@ -103,7 +103,7 @@ class PolyglotRepositoryImpl(PolyglotRepository):
 
         return {"nextQuestion": nextQuestion}
 
-    def scoreUserAnswer(self, question, userAnswer, intent):
+    async def scoreUserAnswer(self, question, userAnswer, intent):
         loraAdapterScoreName = "polyglot-ko-1.3b/score"
         loraAdapterScorePath = os.path.join("interview_model", loraAdapterScoreName, "checkpoint-190")
 
