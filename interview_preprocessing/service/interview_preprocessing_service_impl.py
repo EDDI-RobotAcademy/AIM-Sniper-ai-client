@@ -3,7 +3,7 @@ import itertools
 import json
 import os
 import random
-
+import re
 import pandas as pd
 from tqdm import tqdm
 
@@ -274,6 +274,50 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
         os.makedirs(savePath, exist_ok=True)
         savePath = os.path.join(savePath, f'tech_question_{len(resultList)}.json')
         self.__interviewPreprocessingFileRepository.saveFile(savePath, resultList)
+
+    def removeNumberDot(self, text):
+        return re.sub(r'\b\d{1,2}\.', '', text)
+
+    def getTechQuestionByLLM(self, inputFilePath):
+        keywordList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)
+        resultList = []
+        for job, keywords in tqdm(keywordList.items(), total=len(keywordList), desc='generater questions'):
+            try:
+                for keyword in keywords:
+                    questionList = self.__interviewPreprocessingOpenAIRepository.getTechQuestion(keyword, job)
+                    questionList = questionList.split('<s>')
+                    try:
+                        for question in questionList:
+                            question = self.removeNumberDot(question).strip()
+                            print('question: ', question)
+                            resultList.append({"job": job, "keyword": keyword, 'question': question})
+
+                    except Exception as e:
+                        continue
+            except Exception as e:
+                continue
+            print('resultList: ', resultList)
+
+        savePath = 'assets\\json_data_tech_question'
+        os.makedirs(savePath, exist_ok=True)
+        savePath = os.path.join(savePath, f'tech_question_by_llm.json')
+        self.__interviewPreprocessingFileRepository.saveFile(savePath, resultList)
+
+    def preprocessingTechQuestion(self, inputFilePath):
+        techQuestionList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)
+        for questionSet in techQuestionList:
+            question = questionSet.get('question')
+            questionSet['question'] = re.sub(r'질문\d{1,2}:', '', question).strip()
+            question = questionSet.get('question')
+            if '40' in question :
+                if len(question.split('.')) >= 2 and question.split('.')[-1] != '':
+                    questionSet['question'] = question.split('.')[-1]
+                elif len(question.split(':')) >= 2 and question.split(':')[-1] != '':
+                    questionSet['question'] = question.split('.')[-1]
+        savePath = 'assets\\json_data_tech_question'
+        os.makedirs(savePath, exist_ok=True)
+        savePath = os.path.join(savePath, f'tech_question_{len(techQuestionList)}.json')
+        self.__interviewPreprocessingFileRepository.saveFile(savePath, techQuestionList)
 
     def getTechAnswerAndScoreByLLM(self, inputFilePath):
         questionList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)

@@ -81,6 +81,13 @@ class InterviewPreprocessingService(ABC):
         pass
 
     @abstractmethod
+    def removeNumberDot(self, text):
+        pass
+    @abstractmethod
+    def getTechQuestionByLLM(self, inputFilePath):
+        pass
+
+    @abstractmethod
     def getTechAnswerAndScoreByLLM(self, inputFilePath):
         pass
 
