@@ -72,8 +72,8 @@ class PolyglotRepositoryImpl(PolyglotRepository):
         )
 
     def generateQuestion(self, userAnswer, nextIntent):
-        loraAdapterInterviewName = "polyglot-ko-1.3b/test_20_100"
-        loraAdapterInterviewPath = os.path.join("models", loraAdapterInterviewName, "checkpoint-100")
+        loraAdapterInterviewName = "polyglot-ko-1.3b/interview"
+        loraAdapterInterviewPath = os.path.join("models", loraAdapterInterviewName, "r_512_epochs_100")
 
         prompt = (
             "당신은 면접관입니다. 다음 명령에 따라 적절한 질문을 수행하세요.\n"
