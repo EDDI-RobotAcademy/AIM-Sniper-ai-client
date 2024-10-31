@@ -107,8 +107,11 @@ def getTechKeyword():
     interview.getTechKeywordByLLM()
 
 def getTechQuestions(keywordFilePath):
-    interview.getGeneratedQuestionByRuleBase(keywordFilePath)
+    # interview.getGeneratedQuestionByRuleBase(keywordFilePath)
+    interview.getTechQuestionByLLM(keywordFilePath)
 
+def preprocessingTechQuestion(techQuestionFilePath):
+    interview.preprocessingTechQuestion(techQuestionFilePath)
 def getTechAnswerAndScore(techQuestionFilePath):
     interview.getTechAnswerAndScoreByLLM(techQuestionFilePath)
 
@@ -149,15 +152,16 @@ if __name__ == '__main__':
 
 
     # all session by LLM
-    getQASData(startQuestionFilePath)
+    # getQASData(startQuestionFilePath)
 
     # LLM 기반 키워드 추출
     # getTechKeyword()
 
     # 키워드 기반 기술 면접 question 생성
-    # keywordFilePath = "assets\\json_data_job_keyword\\job_keyword_final.json"
+    keywordFilePath = "assets\\json_data_job_keyword\\job_keyword_final.json"
     # getTechQuestions(keywordFilePath)
-
+    techQuestionFilePath = "assets\\json_data_tech_question\\tech_question_by_llm.json"
+    preprocessingTechQuestion(techQuestionFilePath)
     # LLM 기반 기술 면접 question의 답변 및 점수/피드백 생성
     # techQuestionFilePath = "assets\\json_data_tech_question\\tech_question_6578.json"
     # getTechAnswerAndScore(techQuestionFilePath)

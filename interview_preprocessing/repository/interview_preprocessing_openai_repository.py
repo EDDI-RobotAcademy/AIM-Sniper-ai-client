@@ -14,6 +14,10 @@ class InterviewPreprocessingOpenAIRepository(ABC):
         pass
 
     @abstractmethod
+    def getTechQuestion(self, keyword, job):
+        pass
+
+    @abstractmethod
     def getTechAnswer(self, question, score, job):
         pass
 
