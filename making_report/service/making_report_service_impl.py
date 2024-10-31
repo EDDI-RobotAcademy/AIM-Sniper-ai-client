@@ -28,7 +28,7 @@ class MakingReportServiceImpl(MakingReportService):
 
         return cls.__instance
 
-    async def makingReport(self):
+    async def makingReport(self, request):
         fileList = os.listdir("./assets")
 
         if "report.json" not in fileList:
