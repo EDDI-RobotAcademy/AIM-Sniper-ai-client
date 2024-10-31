@@ -325,12 +325,15 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
             question = data.get('question')
             job = data.get('job')
             score = random.randint(10, 88)
-            answerList = self.__interviewPreprocessingOpenAIRepository.getTechAnswer(question, score, job)
-            answerList = answerList.split('<s>')
-            data['answer'] = answerList[0].replace('answer:', '').replace('\"', '').strip()
-            data['feedback'] = answerList[1].replace('feedback:', '').replace('\"', '').strip()
-            data['alternative_answer'] = answerList[2].replace('example:', '').replace('\"', '').strip()
-            data['score'] = str(score)+"점"
+            try:
+                answerList = self.__interviewPreprocessingOpenAIRepository.getTechAnswer(question, score, job)
+                answerList = answerList.split('<s>')
+                data['answer'] = answerList[0].replace('answer:', '').replace('\"', '').strip()
+                data['feedback'] = answerList[1].replace('feedback:', '').replace('\"', '').strip()
+                data['score'] = str(score)+"점"
+
+            except Exception as e:
+                continue
 
         savePath = 'assets\\json_data_tech_answered'
         os.makedirs(savePath, exist_ok=True)
