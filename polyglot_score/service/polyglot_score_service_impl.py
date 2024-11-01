@@ -47,7 +47,7 @@ class PolyglotScoreServiceImpl(PolyglotScoreService):
         q1, q2, q3, q4, q5 = (interviewList[0], interviewList[1], interviewList[2],
                               interviewList[3], interviewList[4])
 
-        scoreModel, tokenizer = self.__polyglotScoreRepository.loadScoreModel()
+        scoreModel, tokenizer = await self.__polyglotScoreRepository.loadScoreModel()
 
         # 각 인터뷰에 대해 비동기 작업 생성
         result1 = await self.__polyglotScoreRepository.scoreUserAnswerTest(q1[0], q1[1], q1[2], scoreModel, tokenizer)
