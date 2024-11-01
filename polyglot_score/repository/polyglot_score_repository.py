@@ -7,5 +7,5 @@ class PolyglotScoreRepository(ABC):
         pass
 
     @abstractmethod
-    def scoreUserAnswer(self, question, userAnswer, intent):
+    def scoreUserAnswer(self, question, userAnswer, intent, model, tokenizer):
         pass

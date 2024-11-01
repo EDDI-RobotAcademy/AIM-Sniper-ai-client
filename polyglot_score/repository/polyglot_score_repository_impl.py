@@ -8,22 +8,7 @@ from polyglot_score.repository.polyglot_score_repository import PolyglotScoreRep
 
 class PolyglotScoreRepositoryImpl(PolyglotScoreRepository):
     __instance = None
-
-    # load lora adaptor merged model
-    cacheDir = os.path.join("models", "cache")
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
-    config = {
-        "pretrained_model_name_or_path": "EleutherAI/polyglot-ko-1.3b",
-        "trust_remote_code": True,
-        "local_files_only": True,
-        "padding_side": "left",
-        "max_token_length": 1024,
-    }
-
-
     def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super().__new__(cls)
@@ -54,26 +39,9 @@ class PolyglotScoreRepositoryImpl(PolyglotScoreRepository):
             trust_remote_code=True
         )
 
-    async def scoreUserAnswer(self, question, userAnswer, intent):
+    async def scoreUserAnswer(self, question, userAnswer, intent, model, tokenizer):
         loraAdapterScoreName = "polyglot-ko-1.3b/score"
         loraAdapterScorePath = os.path.join("models", loraAdapterScoreName, "checkpoint-190")
-
-        # base model and tokenizer load
-        model = AutoModelForCausalLM.from_pretrained(
-            pretrained_model_name_or_path=self.config['pretrained_model_name_or_path'],
-            trust_remote_code=self.config['trust_remote_code'],
-            cache_dir=self.cacheDir,
-            local_files_only=self.config['local_files_only'])
-
-        tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=self.config['pretrained_model_name_or_path'],
-                                                  trust_remote_code=self.config['trust_remote_code'],
-                                                  cache_dir=self.cacheDir,
-                                                  local_files_only=self.config['local_files_only'],
-                                                  padding_side=self.config['padding_side'])
-
-        tokenizer.pad_token = tokenizer.eos_token
-        tokenizer.pad_token_id = tokenizer.eos_token_id
-        tokenizer.model_max_length = self.config['max_token_length']
 
         prompt = (
             "당신은 면접 대상자의 답변을 채점하는 면접관입니다.\n"

@@ -23,23 +23,6 @@ class PolyglotRepositoryImpl(PolyglotRepository):
         "max_token_length": 1024,
     }
 
-    # base model and tokenizer load
-    model = AutoModelForCausalLM.from_pretrained(
-        pretrained_model_name_or_path=config['pretrained_model_name_or_path'],
-        trust_remote_code=config['trust_remote_code'],
-        cache_dir=cacheDir,
-        local_files_only=config['local_files_only'])
-
-    tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=config['pretrained_model_name_or_path'],
-                                              trust_remote_code=config['trust_remote_code'],
-                                              cache_dir=cacheDir,
-                                              local_files_only=config['local_files_only'],
-                                              padding_side=config['padding_side'])
-
-    tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.pad_token_id = tokenizer.eos_token_id
-    tokenizer.model_max_length = config['max_token_length']
-
 
     def __new__(cls):
         if cls.__instance is None:
@@ -72,6 +55,25 @@ class PolyglotRepositoryImpl(PolyglotRepository):
         )
 
     def generateQuestion(self, userAnswer, nextIntent):
+
+        model = AutoModelForCausalLM.from_pretrained(
+            pretrained_model_name_or_path=self.config['pretrained_model_name_or_path'],
+            trust_remote_code=self.config['trust_remote_code'],
+            cache_dir=self.cacheDir,
+            local_files_only=self.config['local_files_only'])
+
+        tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=self.config['pretrained_model_name_or_path'],
+                                                  trust_remote_code=self.config['trust_remote_code'],
+                                                  cache_dir=self.cacheDir,
+                                                  local_files_only=self.config['local_files_only'],
+                                                  padding_side=self.config['padding_side'])
+
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.model_max_length = self.config['max_token_length']
+
+
+
         loraAdapterInterviewName = "polyglot-ko-1.3b/interview"
         loraAdapterInterviewPath = os.path.join("models", loraAdapterInterviewName, "r_512_epochs_100")
 
@@ -85,10 +87,10 @@ class PolyglotRepositoryImpl(PolyglotRepository):
         source = prompt.format_map(dict(answer=beforeAnswer,
                                         intent=nextIntent))
 
-        input = self.tokenizer([source], return_tensors="pt", return_token_type_ids=False).to(self.device)
+        input = tokenizer([source], return_tensors="pt", return_token_type_ids=False).to(self.device)
         inputLength = len(source)
 
-        interviewModel = PeftModel.from_pretrained(self.model, loraAdapterInterviewPath)
+        interviewModel = PeftModel.from_pretrained(model, loraAdapterInterviewPath)
         interviewModel = interviewModel.merge_and_unload()
 
         interviewModel.eval()
@@ -96,7 +98,7 @@ class PolyglotRepositoryImpl(PolyglotRepository):
 
         with torch.no_grad():
             output = interviewModel.generate(**input, max_new_tokens=200)
-            output = self.tokenizer.decode(output[0], skip_special_tokens=True)
+            output = tokenizer.decode(output[0], skip_special_tokens=True)
             output = output[inputLength:]
 
         nextQuestion = output
