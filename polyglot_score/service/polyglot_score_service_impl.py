@@ -59,12 +59,15 @@ class PolyglotScoreServiceImpl(PolyglotScoreService):
         tokenizer.pad_token_id = tokenizer.eos_token_id
         tokenizer.model_max_length = self.config['max_token_length']
 
+        q1, q2, q3, q4, q5 = (interviewList[0], interviewList[1], interviewList[2],
+                              interviewList[3], interviewList[4])
         # 각 인터뷰에 대해 비동기 작업 생성
-        tasks = [
-            self.__polyglotScoreRepository.scoreUserAnswer(interview[0], interview[1], interview[2], model, tokenizer)
-            for interview in interviewList
-        ]
+        result1 = self.__polyglotScoreRepository.scoreUserAnswer(q1[0], q1[1], q1[2], model, tokenizer)
+        result2 = self.__polyglotScoreRepository.scoreUserAnswer(q2[0], q2[1], q2[2], model, tokenizer)
+        result3 = self.__polyglotScoreRepository.scoreUserAnswer(q3[0], q3[1], q3[2], model, tokenizer)
+        result4 = self.__polyglotScoreRepository.scoreUserAnswer(q4[0], q4[1], q4[2], model, tokenizer)
+        result5 = self.__polyglotScoreRepository.scoreUserAnswer(q5[0], q5[1], q5[2], model, tokenizer)
         # 모든 비동기 작업을 병렬로 실행
-        resultList = await asyncio.gather(*tasks)
+        resultList = [result1, result2, result3, result4, result5]
         ColorPrinter.print_important_message(f'resultList: {resultList}')
         return {'resultList': resultList}
