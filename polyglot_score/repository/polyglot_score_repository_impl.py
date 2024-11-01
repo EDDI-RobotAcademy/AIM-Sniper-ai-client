@@ -100,7 +100,7 @@ class PolyglotScoreRepositoryImpl(PolyglotScoreRepository):
         tokenizer.model_max_length = self.config['max_token_length']
 
         loraAdapterScoreName = "polyglot-ko-1.3b/score"
-        loraAdapterScorePath = os.path.join("models", loraAdapterScoreName, "checkpoint-190")
+        loraAdapterScorePath = os.path.join("models", loraAdapterScoreName, "r512-epoch100")
 
         scoreModel = PeftModel.from_pretrained(model, loraAdapterScorePath)
         scoreModel = scoreModel.merge_and_unload()
