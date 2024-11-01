@@ -89,8 +89,11 @@ class InterviewPreprocessingOpenAIRepositoryImpl(InterviewPreprocessingOpenAIRep
     def getTechAnswer(self, question, score, job):
         if score <= 55:
             under50Prompt = '조금 잘못된 '
+        elif score <=67:
+            under50Prompt = '다소 애매한'
         else:
             under50Prompt = ''
+
         response = openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -99,8 +102,8 @@ class InterviewPreprocessingOpenAIRepositoryImpl(InterviewPreprocessingOpenAIRep
                  "content":
                      """[Question] """ + question +
                      f"""[Note]
-                     1. [Question]에 대해 {score}점짜리 {under50Prompt}예상 답변을 작성해줘.
-                     2. 그리고 예상 답변에 대한 피드백을 작성해줘.
+                     1. [Question]에 대해 {score}점짜리 {under50Prompt}예상 답변과 그 예상 답변에 대한 피드백을 작성해줘.
+                     2. 예상 답변은 실제로 면접자가 말하는 듯이 작성해줘.
                      3. output은 "answer:예상 답변<s>feedback:예상 답변에 대한 피드백"처럼 각각을 "<s>"로 분리하여 생성해줘.
                      """
 
@@ -116,7 +119,7 @@ class InterviewPreprocessingOpenAIRepositoryImpl(InterviewPreprocessingOpenAIRep
                 {"role": "system", "content": "너는 면접 대상자의 답변을 채점하는 유용한 채용 담당자야."},
                 {"role": "user",
                  "content":
-                f"""[Question]{question} 
+                    f""" [Question]{question} 
                     [Intent]{intent} 
                     [Answer]{answer}
                     [Note]
