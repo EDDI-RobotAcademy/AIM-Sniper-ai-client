@@ -121,6 +121,9 @@ def getQASData(sessionDataPath):
 def getStartQuestion(filteredFilePath, startQuestionFilePath):
     interview.getStartQuestionList(filteredFilePath, startQuestionFilePath)
 
+def splitJob(techQuestionFilePath):
+    interview.splitJob(techQuestionFilePath)
+
 if __name__ == '__main__':
     # rawFilePath = 'assets\\json_data_raw\\'
     # concatenatedFilePath = 'assets\\json_data_concatenated\\'
@@ -163,8 +166,14 @@ if __name__ == '__main__':
     # techQuestionFilePath = "assets\\json_data_tech_question\\tech_question_by_llm.json"
     # preprocessingTechQuestion(techQuestionFilePath)
     # LLM 기반 기술 면접 question의 답변 및 점수/피드백 생성
-    techQuestionFilePath = "assets\\json_data_tech_question\\tech_question_10570.json"
-    getTechAnswerAndScore(techQuestionFilePath)
+    # techQuestionFilePath = "assets\\json_data_tech_question\\tech_question_10570.json"
+    # splitJob(techQuestionFilePath)
+    backendFilePath = "assets\\json_data_tech_question\\tech_question_Backend_2178.json"
+    frontendFilePath = "assets\\json_data_tech_question\\tech_question_Frontend_2364.json"
+    aiFilePath = "assets\\json_data_tech_question\\tech_question_AI_2014.json"
+    infraFilePath = "assets\\json_data_tech_question\\tech_question_Infra_2129.json"
+    devOpsFilePath = "assets\\json_data_tech_question\\tech_question_DevOps_1884.json"
+    getTechAnswerAndScore(backendFilePath)
 
     # 기술 면접 세션 생성
     # 'assets\\json_data_tech_answered'

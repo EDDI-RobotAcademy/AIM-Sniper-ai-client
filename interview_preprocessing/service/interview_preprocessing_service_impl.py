@@ -321,23 +321,40 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
 
     def getTechAnswerAndScoreByLLM(self, inputFilePath):
         questionList = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)
-        for data in questionList:
+        nameForSave = ''
+        for data in tqdm(questionList, total=len(questionList), desc='generate answer score'):
             question = data.get('question')
             job = data.get('job')
+            nameForSave = job
             score = random.randint(10, 88)
+            answerList = self.__interviewPreprocessingOpenAIRepository.getTechAnswer(question, score, job)
             try:
-                answerList = self.__interviewPreprocessingOpenAIRepository.getTechAnswer(question, score, job)
                 answerList = answerList.split('<s>')
                 data['answer'] = answerList[0].replace('answer:', '').replace('\"', '').strip()
                 data['feedback'] = answerList[1].replace('feedback:', '').replace('\"', '').strip()
-                data['score'] = str(score)+"점"
+                data['score'] = str(score) + "점"
+            except:
+                try:
+                    print('줄바꿈 제거 방법 시도')
+                    data['answer'] = answerList[0].replace('answer:', '').replace('\\n', '').replace('\"', '').strip()
+                    data['feedback'] = answerList[1].replace('feedback:', '').replace('\"', '').strip()
+                    data['score'] = str(score) + "점"
 
-            except Exception as e:
-                continue
+                except:
+                    try:
+                        answerList = answerList[0].split('feedback:')
+                        data['answer'] = answerList[0].replace('answer:', '').replace('\\n', '').replace('\"', '').strip()
+                        data['feedback'] = answerList[1].replace('feedback:', '').replace('\\n', '').replace('\"', '').strip()
+                        data['score'] = str(score) + "점"
+                    except Exception as e:
+                        print('처리하지 못함: ', e)
+                        continue
+
+
 
         savePath = 'assets\\json_data_tech_answered'
         os.makedirs(savePath, exist_ok=True)
-        savePath = os.path.join(savePath, f'tech_data_answered_{len(questionList)}.json')
+        savePath = os.path.join(savePath, f'qas_{nameForSave}_{len(questionList)}.json')
         self.__interviewPreprocessingFileRepository.saveFile(savePath, questionList)
 
     def getStartQuestionList(self, inputFilePath, saveFilePath):
@@ -410,3 +427,33 @@ class InterviewPreprocessingServiceImpl(InterviewPreprocessingService):
                 generatedSession = []
                 print(e)
                 continue
+
+    def splitJob(self, inputFilePath):
+        files = self.__interviewPreprocessingFileRepository.readFile(inputFilePath)
+        backendList, frontendList, aiList, InfraList, DevOpsList = [], [], [], [], []
+        for file in files:
+            job = file.get('job')
+            if job == 'Backend':
+                backendList.append(file)
+            elif job == 'Frontend':
+                frontendList.append(file)
+            elif job == 'AI':
+                aiList.append(file)
+            elif job == 'Infra':
+                InfraList.append(file)
+            elif job == 'DevOps':
+                DevOpsList.append(file)
+
+        savePath = 'assets\\json_data_tech_question'
+        os.makedirs(savePath, exist_ok=True)
+        tech_categories = {
+            "Backend": backendList,
+            "Frontend": frontendList,
+            "AI": aiList,
+            "Infra": InfraList,
+            "DevOps": DevOpsList
+        }
+        for name, data in tech_categories.items():
+            file_name = f'tech_question_{name}_{len(data)}.json'
+            file_path = os.path.join(savePath, file_name)
+            self.__interviewPreprocessingFileRepository.saveFile(file_path, data)

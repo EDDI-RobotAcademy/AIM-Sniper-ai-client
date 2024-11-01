@@ -98,3 +98,7 @@ class InterviewPreprocessingService(ABC):
     @abstractmethod
     def getQASByLLM(self, inputFilePath):
         pass
+
+    @abstractmethod
+    def splitJob(self, inputFilePath):
+        pass
