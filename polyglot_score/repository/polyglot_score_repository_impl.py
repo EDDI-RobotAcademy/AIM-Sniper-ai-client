@@ -41,7 +41,7 @@ class PolyglotScoreRepositoryImpl(PolyglotScoreRepository):
 
     async def scoreUserAnswer(self, question, userAnswer, intent, model, tokenizer):
         loraAdapterScoreName = "polyglot-ko-1.3b/score"
-        loraAdapterScorePath = os.path.join("models", loraAdapterScoreName, "checkpoint-190")
+        loraAdapterScorePath = os.path.join("models", loraAdapterScoreName, "r512-epoch100")
 
         prompt = (
             "당신은 면접 대상자의 답변을 채점하는 면접관입니다.\n"
