@@ -48,11 +48,12 @@ class PolyglotScoreServiceImpl(PolyglotScoreService):
             cache_dir=self.cacheDir,
             local_files_only=self.config['local_files_only'])
 
-        tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=self.config['pretrained_model_name_or_path'],
-                                                  trust_remote_code=self.config['trust_remote_code'],
-                                                  cache_dir=self.cacheDir,
-                                                  local_files_only=self.config['local_files_only'],
-                                                  padding_side=self.config['padding_side'])
+        tokenizer = (AutoTokenizer.
+                     from_pretrained(pretrained_model_name_or_path=self.config['pretrained_model_name_or_path'],
+                                     trust_remote_code=self.config['trust_remote_code'],
+                                     cache_dir=self.cacheDir,
+                                     local_files_only=self.config['local_files_only'],
+                                     padding_side=self.config['padding_side']))
 
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.pad_token_id = tokenizer.eos_token_id
