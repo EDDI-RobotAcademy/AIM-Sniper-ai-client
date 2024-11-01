@@ -1,6 +1,7 @@
 import os
 import asyncio
 import torch
+from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from polyglot_score.service.polyglot_score_service import PolyglotScoreService
@@ -42,31 +43,18 @@ class PolyglotScoreServiceImpl(PolyglotScoreService):
             self.__polyglotScoreRepository.downloadPretrainedModel()
 
         interviewList = arg
-        model = AutoModelForCausalLM.from_pretrained(
-            pretrained_model_name_or_path=self.config['pretrained_model_name_or_path'],
-            trust_remote_code=self.config['trust_remote_code'],
-            cache_dir=self.cacheDir,
-            local_files_only=self.config['local_files_only'])
-
-        tokenizer = (AutoTokenizer.
-                     from_pretrained(pretrained_model_name_or_path=self.config['pretrained_model_name_or_path'],
-                                     trust_remote_code=self.config['trust_remote_code'],
-                                     cache_dir=self.cacheDir,
-                                     local_files_only=self.config['local_files_only'],
-                                     padding_side=self.config['padding_side']))
-
-        tokenizer.pad_token = tokenizer.eos_token
-        tokenizer.pad_token_id = tokenizer.eos_token_id
-        tokenizer.model_max_length = self.config['max_token_length']
 
         q1, q2, q3, q4, q5 = (interviewList[0], interviewList[1], interviewList[2],
                               interviewList[3], interviewList[4])
+
+        scoreModel, tokenizer = self.__polyglotScoreRepository.loadScoreModel()
+
         # 각 인터뷰에 대해 비동기 작업 생성
-        result1 = await self.__polyglotScoreRepository.scoreUserAnswer(q1[0], q1[1], q1[2], model, tokenizer)
-        result2 = await self.__polyglotScoreRepository.scoreUserAnswer(q2[0], q2[1], q2[2], model, tokenizer)
-        result3 = await self.__polyglotScoreRepository.scoreUserAnswer(q3[0], q3[1], q3[2], model, tokenizer)
-        result4 = await self.__polyglotScoreRepository.scoreUserAnswer(q4[0], q4[1], q4[2], model, tokenizer)
-        result5 = await self.__polyglotScoreRepository.scoreUserAnswer(q5[0], q5[1], q5[2], model, tokenizer)
+        result1 = await self.__polyglotScoreRepository.scoreUserAnswerTest(q1[0], q1[1], q1[2], scoreModel, tokenizer)
+        result2 = await self.__polyglotScoreRepository.scoreUserAnswerTest(q2[0], q2[1], q2[2], scoreModel, tokenizer)
+        result3 = await self.__polyglotScoreRepository.scoreUserAnswerTest(q3[0], q3[1], q3[2], scoreModel, tokenizer)
+        result4 = await self.__polyglotScoreRepository.scoreUserAnswerTest(q4[0], q4[1], q4[2], scoreModel, tokenizer)
+        result5 = await self.__polyglotScoreRepository.scoreUserAnswerTest(q5[0], q5[1], q5[2], scoreModel, tokenizer)
         # 모든 비동기 작업을 병렬로 실행
         resultList = [result1, result2, result3, result4, result5]
         ColorPrinter.print_important_message(f'resultList: {resultList}')
