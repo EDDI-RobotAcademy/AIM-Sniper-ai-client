@@ -52,35 +52,6 @@ class PolyglotScoreRepositoryImpl(PolyglotScoreRepository):
             trust_remote_code=True
         )
 
-    async def scoreUserAnswer(self, question, userAnswer, intent, model, tokenizer):
-        loraAdapterScoreName = "polyglot-ko-1.3b/score"
-        loraAdapterScorePath = os.path.join("models", loraAdapterScoreName, "r512-epoch100")
-
-        prompt = (
-            "당신은 면접 대상자의 답변을 채점하는 면접관입니다.\n"
-            "면접 질문은 당신이 면접 대상자로부터 질문 의도인 '{intent}'에 대한 정보를 파악하기 위한 질문입니다. "
-            "면접 대상자의 답변은 면접 질문에 대한 답변입니다.\n"
-            "면접 대상자가 면접관의 질문에 대해 얼마나 잘 대답했는지를 1~100점으로 채점하고, 답변에 대한 feedback을 제공해주세요.\n"
-            "면접 질문: {question}\n면접 대상자의 답변: {answer}\n질문 의도: {intent}\noutput:"
-        )
-        source = prompt.format_map(dict(question=question, intent=intent, answer=userAnswer))
-        input = tokenizer([source], return_tensors="pt", return_token_type_ids=False).to(self.device)
-        inputLength = len(source)
-
-        scoreModel = PeftModel.from_pretrained(model, loraAdapterScorePath)
-        scoreModel = scoreModel.merge_and_unload()
-
-        scoreModel.eval()
-        scoreModel.to(self.device)
-
-        with torch.no_grad():
-            output = scoreModel.generate(**input, max_new_tokens=1024)
-            output = tokenizer.decode(output[0], skip_special_tokens=True)
-            output = output[inputLength:]
-        result = output
-
-        return result
-
     async def loadScoreModel(self):
         model = AutoModelForCausalLM.from_pretrained(
             pretrained_model_name_or_path=self.config['pretrained_model_name_or_path'],
@@ -109,7 +80,8 @@ class PolyglotScoreRepositoryImpl(PolyglotScoreRepository):
         scoreModel.to(self.device)
 
         return scoreModel, tokenizer
-    async def scoreUserAnswerTest(self, question, userAnswer, intent, scoreModel, tokenizer):
+
+    async def scoreUserAnswer(self, question, userAnswer, intent, scoreModel, tokenizer):
         prompt = (
             "당신은 면접 대상자의 답변을 채점하는 면접관입니다.\n"
             "면접 질문은 당신이 면접 대상자로부터 질문 의도인 '{intent}'에 대한 정보를 파악하기 위한 질문입니다. "
