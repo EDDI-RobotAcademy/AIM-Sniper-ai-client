@@ -7,6 +7,9 @@ from making_report.service.response.making_report_response import MakingReportRe
 from openai.service.openai_service_impl import OpenAIServiceImpl
 from openai.service.request.openai_request import OpenAIRequest
 from openai.service.response.openai_response import OpenAIResponse
+from openai_result.service.openai_service_impl import OpenAIResultServiceImpl
+from openai_result.service.request.openai_request import OpenAIResultRequest
+from openai_result.service.response.openai_response import OpenAIResultResponse
 from polyglot_temp.service.polyglot_service_impl import PolyglotServiceImpl
 from polyglot_temp.service.request.polyglot_request import PolyglotRequest
 from polyglot_temp.service.response.polyglot_response import PolyglotResponse
@@ -137,28 +140,6 @@ class UserDefinedProtocolRegister:
             reportService.makingReport
         )
 
-    @staticmethod
-    def registerOpenAIProtocol():
-        customProtocolService = CustomProtocolServiceImpl.getInstance()
-        openAIService = OpenAIServiceImpl.getInstance()
-
-        requestClassMapInstance = RequestClassMap.getInstance()
-        requestClassMapInstance.addRequestClass(
-            UserDefinedProtocolNumber.OPEN_API,
-            OpenAIRequest
-        )
-
-        responseClassMapInstance = ResponseClassMap.getInstance()
-        responseClassMapInstance.addResponseClass(
-            UserDefinedProtocolNumber.OPEN_API,
-            OpenAIResponse
-        )
-
-        customProtocolService.registerCustomProtocol(
-            UserDefinedProtocolNumber.OPEN_API,
-            openAIService.testai
-        )
-
 
 
     @staticmethod
@@ -167,4 +148,3 @@ class UserDefinedProtocolRegister:
         UserDefinedProtocolRegister.registerPolyglotProtocol()
         UserDefinedProtocolRegister.registerPolyglotScoreProtocol()
         UserDefinedProtocolRegister.registerReportMakingProtocol()
-        UserDefinedProtocolRegister.registerOpenAIProtocol()
