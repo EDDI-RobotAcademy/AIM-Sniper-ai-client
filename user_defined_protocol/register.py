@@ -167,3 +167,4 @@ class UserDefinedProtocolRegister:
         UserDefinedProtocolRegister.registerPolyglotProtocol()
         UserDefinedProtocolRegister.registerPolyglotScoreProtocol()
         UserDefinedProtocolRegister.registerReportMakingProtocol()
+        UserDefinedProtocolRegister.registerOpenAIProtocol()
