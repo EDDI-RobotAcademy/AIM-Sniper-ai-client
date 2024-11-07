@@ -44,8 +44,8 @@ class PolyglotScoreServiceImpl(PolyglotScoreService):
 
         interviewList = arg
 
-        q1, q2, q3, q4, q5 = (interviewList[0], interviewList[1], interviewList[2],
-                              interviewList[3], interviewList[4])
+        q1, q2, q3, q4, q5, q6 = (interviewList[0], interviewList[1], interviewList[2],
+                              interviewList[3], interviewList[4], interviewList[5])
 
         scoreModel, tokenizer = await self.__polyglotScoreRepository.loadScoreModel()
 
@@ -55,7 +55,9 @@ class PolyglotScoreServiceImpl(PolyglotScoreService):
         result3 = await self.__polyglotScoreRepository.scoreUserAnswer(q3[0], q3[1], q3[2], scoreModel, tokenizer)
         result4 = await self.__polyglotScoreRepository.scoreUserAnswer(q4[0], q4[1], q4[2], scoreModel, tokenizer)
         result5 = await self.__polyglotScoreRepository.scoreUserAnswer(q5[0], q5[1], q5[2], scoreModel, tokenizer)
+        result6 = await self.__polyglotScoreRepository.scoreUserAnswer(q6[0], q6[1], q6[2], scoreModel, tokenizer)
+
         # 모든 비동기 작업을 병렬로 실행
-        resultList = [result1, result2, result3, result4, result5]
+        resultList = [result1, result2, result3, result4, result5, result6]
         ColorPrinter.print_important_message(f'resultList: {resultList}')
         return {'resultList': resultList}
