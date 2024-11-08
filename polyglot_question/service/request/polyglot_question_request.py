@@ -2,9 +2,9 @@ from template.request_generator.base_request import BaseRequest
 from user_defined_protocol.protocol import UserDefinedProtocolNumber
 
 
-class PolyglotRequest(BaseRequest):
+class PolyglotQuestionRequest(BaseRequest):
     def __init__(self, **kwargs):
-        self.__protocolNumber = UserDefinedProtocolNumber.POLYGLOT.value
+        self.__protocolNumber = UserDefinedProtocolNumber.POLYGLOT_QUESTION.value
         self.parameterList = kwargs.get('data', [])
 
     def getProtocolNumber(self):
@@ -20,4 +20,4 @@ class PolyglotRequest(BaseRequest):
         }
 
     def __str__(self):
-        return f"PolyglotRequest(protocolNumber={self.__protocolNumber}, parameterList={self.parameterList})"
+        return f"PolyglotQuestionRequest(protocolNumber={self.__protocolNumber}, parameterList={self.parameterList})"

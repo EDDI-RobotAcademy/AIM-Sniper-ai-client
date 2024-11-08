@@ -1,9 +1,9 @@
 from user_defined_protocol.protocol import UserDefinedProtocolNumber
 
 
-class PolyglotResponse:
+class PolyglotQuestionResponse:
     def __init__(self, responseData):
-        self.protocolNumber = UserDefinedProtocolNumber.POLYGLOT.value
+        self.protocolNumber = UserDefinedProtocolNumber.POLYGLOT_QUESTION.value
 
         for key, value in responseData.items():
             setattr(self, key, value)
@@ -16,4 +16,4 @@ class PolyglotResponse:
         return self.__dict__
 
     def __str__(self):
-        return f"PolyglotResponse({self.__dict__})"
+        return f"PolyglotQuestionResponse({self.__dict__})"
