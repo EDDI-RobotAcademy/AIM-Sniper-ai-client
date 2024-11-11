@@ -1,16 +1,15 @@
 import os
-import asyncio
-from polyglot_temp.repository.polyglot_repository_impl import PolyglotRepositoryImpl
-from polyglot_temp.service.polyglot_service import PolyglotService
+from polyglot_question.repository.polyglot_question_repository_impl import PolyglotQuestionRepositoryImpl
+from polyglot_question.service.polyglot_question_service import PolyglotQuestionService
 
 
-class PolyglotServiceImpl(PolyglotService):
+class PolyglotQuestionServiceImpl(PolyglotQuestionService):
     __instance = None
 
     def __new__(cls):
         if cls.__instance is None:
             cls.__instance = super().__new__(cls)
-            cls.__instance.__polyglotRepository = PolyglotRepositoryImpl.getInstance()
+            cls.__instance.__polyglotQuestionRepository = PolyglotQuestionRepositoryImpl.getInstance()
 
             return cls.__instance
 
@@ -24,9 +23,9 @@ class PolyglotServiceImpl(PolyglotService):
     async def generateNextQuestion(self, *arg, **kwargs):
         cacheDir = os.path.join("models", "cache")
         if not os.path.exists(cacheDir):
-            self.__polyglotRepository.downloadPretrainedModel()
+            self.__polyglotQuestionRepository.downloadPretrainedModel()
 
         userAnswer = arg[0]
         nextIntent = arg[1]
 
-        return self.__polyglotRepository.generateQuestion(userAnswer, nextIntent)
+        return self.__polyglotQuestionRepository.generateQuestion(userAnswer, nextIntent)

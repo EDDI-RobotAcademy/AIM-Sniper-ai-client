@@ -4,15 +4,12 @@ import sys
 from making_report.service.making_report_service_impl import MakingReportServiceImpl
 from making_report.service.request.making_report_request import MakingReportRequest
 from making_report.service.response.making_report_response import MakingReportResponse
-from polyglot_temp.service.polyglot_service_impl import PolyglotServiceImpl
-from polyglot_temp.service.request.polyglot_request import PolyglotRequest
-from polyglot_temp.service.response.polyglot_response import PolyglotResponse
+from polyglot_question.service.polyglot_question_service_impl import PolyglotQuestionServiceImpl
+from polyglot_question.service.request.polyglot_question_request import PolyglotQuestionRequest
+from polyglot_question.service.response.polyglot_question_response import PolyglotQuestionResponse
 from polyglot_score.service.polyglot_score_service_impl import PolyglotScoreServiceImpl
 from polyglot_score.service.request.polyglot_score_request import PolyglotScoreRequest
 from polyglot_score.service.response.polyglot_score_response import PolyglotScoreResponse
-from test.service.request.test_request import TestRequest
-from test.service.response.test_response import TestResponse
-from test.service.test_service_impl import TestServiceImpl
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'template'))
 
@@ -25,47 +22,25 @@ from user_defined_protocol.protocol import UserDefinedProtocolNumber
 
 class UserDefinedProtocolRegister:
     @staticmethod
-    def registerTestProtocol():
+    def registerPolyglotQuestionProtocol():
         customProtocolService = CustomProtocolServiceImpl.getInstance()
-        testService = TestServiceImpl.getInstance()
+        polyglotQuestionService = PolyglotQuestionServiceImpl.getInstance()
 
         requestClassMapInstance = RequestClassMap.getInstance()
         requestClassMapInstance.addRequestClass(
-            UserDefinedProtocolNumber.TEST,
-            TestRequest
+            UserDefinedProtocolNumber.POLYGLOT_QUESTION,
+            PolyglotQuestionRequest
         )
 
         responseClassMapInstance = ResponseClassMap.getInstance()
         responseClassMapInstance.addResponseClass(
-            UserDefinedProtocolNumber.TEST,
-            TestResponse
+            UserDefinedProtocolNumber.POLYGLOT_QUESTION,
+            PolyglotQuestionResponse
         )
 
         customProtocolService.registerCustomProtocol(
-            UserDefinedProtocolNumber.TEST,
-            testService.printTestWord
-        )
-
-    @staticmethod
-    def registerPolyglotProtocol():
-        customProtocolService = CustomProtocolServiceImpl.getInstance()
-        polyglotService = PolyglotServiceImpl.getInstance()
-
-        requestClassMapInstance = RequestClassMap.getInstance()
-        requestClassMapInstance.addRequestClass(
-            UserDefinedProtocolNumber.POLYGLOT,
-            PolyglotRequest
-        )
-
-        responseClassMapInstance = ResponseClassMap.getInstance()
-        responseClassMapInstance.addResponseClass(
-            UserDefinedProtocolNumber.POLYGLOT,
-            PolyglotResponse
-        )
-
-        customProtocolService.registerCustomProtocol(
-            UserDefinedProtocolNumber.POLYGLOT,
-            polyglotService.generateNextQuestion
+            UserDefinedProtocolNumber.POLYGLOT_QUESTION,
+            polyglotQuestionService.generateNextQuestion
         )
 
     @staticmethod
@@ -138,7 +113,6 @@ class UserDefinedProtocolRegister:
 
     @staticmethod
     def registerUserDefinedProtocol():
-        UserDefinedProtocolRegister.registerTestProtocol()
-        UserDefinedProtocolRegister.registerPolyglotProtocol()
+        UserDefinedProtocolRegister.registerPolyglotQuestionProtocol()
         UserDefinedProtocolRegister.registerPolyglotScoreProtocol()
         UserDefinedProtocolRegister.registerReportMakingProtocol()

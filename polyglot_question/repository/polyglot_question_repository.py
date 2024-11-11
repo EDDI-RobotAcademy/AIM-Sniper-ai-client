@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class PolyglotRepository(ABC):
+class PolyglotQuestionRepository(ABC):
     @abstractmethod
     def downloadPretrainedModel(self):
         pass

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class PolyglotService(ABC):
+class PolyglotQuestionService(ABC):
     @abstractmethod
     def generateNextQuestion(self, *arg, **kwargs):
         pass

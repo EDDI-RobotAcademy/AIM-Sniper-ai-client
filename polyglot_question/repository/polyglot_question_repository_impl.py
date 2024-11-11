@@ -1,4 +1,4 @@
-from polyglot_temp.repository.polyglot_repository import PolyglotRepository
+from polyglot_question.repository.polyglot_question_repository import PolyglotQuestionRepository
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
@@ -6,7 +6,7 @@ from peft import PeftModel
 
 import os
 
-class PolyglotRepositoryImpl(PolyglotRepository):
+class PolyglotQuestionRepositoryImpl(PolyglotQuestionRepository):
     __instance = None
 
     # load lora adaptor merged model
@@ -75,7 +75,7 @@ class PolyglotRepositoryImpl(PolyglotRepository):
 
 
         loraAdapterInterviewName = "polyglot-ko-1.3b/interview"
-        loraAdapterInterviewPath = os.path.join("models", loraAdapterInterviewName, "r_512_epochs_100")
+        loraAdapterInterviewPath = os.path.join("models", loraAdapterInterviewName, "final")
 
         prompt = (
             "당신은 면접관입니다. 다음 명령에 따라 적절한 질문을 수행하세요.\n"
